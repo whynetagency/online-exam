@@ -1,0 +1,30 @@
+.footer{
+  background: var(--dark-color);
+  padding: 15px;
+  p {
+    margin-bottom: 0;
+    font-size: 13px;
+    color: var(--light-text);
+  }
+  a {
+    color: var(--light-text);
+    text-decoration: none;
+    transition-duration: var(--transition-duration);
+
+    &:hover {
+      color: var(--link-color-hover);
+      text-decoration: none;
+    }
+  }
+  &__right {
+    text-align: right;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .footer{
+    p{
+      text-align: center;
+    }
+  }
+}

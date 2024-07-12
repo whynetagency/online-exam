@@ -1,0 +1,65 @@
+{
+  "id": "notariat",
+  "title": "Нотариат",
+  "title-kz": "Нотариат",
+  "topics": [
+    {
+      "id": "3-civilCode",
+      "title": "Гражданский кодекс РК",
+      "title-kz": "Қазақстан Республикасының азаматтық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-landCode",
+      "title": "Земельный кодекс РК",
+      "title-kz": "Қазақстан Республикасының Жер кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-familyCode",
+      "title": "Кодекс «О браке (супружестве) и семье»",
+      "title-kz": "Неке (ерлі-зайыптылық) және отбасы туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-adminProcedures",
+      "title": "Административный процедурно-процессуальный кодекс РК",
+      "title-kz": "Қазақстан Республикасының әкімшілік рәсімдік-процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-antiCorruption",
+      "title": "Закон «O противодействии коррупции»",
+      "title-kz": "Сыбайлас жемқорлыққа қарсы іс-қимыл туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-lawRegistrationOfRealEstate",
+      "title": "Закон «О государственной регистрации прав на недвижимое имущество»",
+      "title-kz": "Жылжымайтын мүлікке құқықтарды мемлекеттік тіркеу туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-lawOfHousingRelations",
+      "title": "Закон «О жилищных отношениях»",
+      "title-kz": "Тұрғын үй қатынастары туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "3-lawOfNotariat",
+      "title": "Закон «О нотариате»",
+      "title-kz": "Нотариат туралы",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 30,
+  "pricePerTestHigh": 50
+}

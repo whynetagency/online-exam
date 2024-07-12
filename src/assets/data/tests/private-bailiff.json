@@ -1,0 +1,65 @@
+{
+  "id": "privateBailiffExam",
+  "title": "Частный судебный исполнитель",
+  "title-kz": "Жеке сот орындаушысы",
+  "topics": [
+    {
+      "id": "5-privateBailiff",
+      "title": "Об исполнительном производстве и статусе судебных исполнителей",
+      "title-kz": "Атқарушылық iс жүргiзу және сот орындаушыларының мәртебесi туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-adminProcedures",
+      "title": "Административный процедурно-процессуальный кодекс РК",
+      "title-kz": "ҚР әкімшілік рәсімдік-процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-civilCode",
+      "title": "Гражданский кодекс РК",
+      "title-kz": "ҚР азаматтық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-civilProcedureCode",
+      "title": "Гражданский процессуальный кодекс РК",
+      "title-kz": "ҚР Азаматтық процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-criminalCode",
+      "title": "Уголовный кодекс РК",
+      "title-kz": "ҚР Қылмыстық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-codeOfCriminalProcedure",
+      "title": "Уголовно-процессуальный кодекс РК",
+      "title-kz": "ҚР Қылмыстық-процестік кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-adminOffenses",
+      "title": "Кодекс РК об административных правонарушениях",
+      "title-kz": "ҚР Әкімшілік құқық бұзушылық туралы кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "5-familyCode",
+      "title": "Кодекс «О браке (супружестве) и семье»",
+      "title-kz": "Неке (ерлі-зайыптылық) және отбасы туралы кодексi",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 10,
+  "pricePerTestHigh": 30
+}

@@ -1,0 +1,65 @@
+{
+  "id": "advocacy",
+  "title": "Адвокатура",
+  "title-kz": "Адвокатура",
+  "topics": [
+    {
+      "id": "4-civilCode",
+      "title": "Гражданский кодекс РК",
+      "title-kz": "Қазақстан Республикасының азаматтық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-civilProcedureCode",
+      "title": "Гражданский процессуальный кодекс РК",
+      "title-kz": "Қазақстан Республикасының Азаматтық процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-criminalCode",
+      "title": "Уголовный кодекс РК",
+      "title-kz": "Қазақстан Республикасының Қылмыстық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-codeOfCriminalProcedure",
+      "title": "Уголовно-процессуальный кодекс РК",
+      "title-kz": "Қазақстан Республикасының Қылмыстық-процестік кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-adminOffenses",
+      "title": "Кодекс об административных правонарушениях",
+      "title-kz": "Әкімшілік құқық бұзушылық туралы кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-antiCorruption",
+      "title": "Закон «O противодействии коррупции»",
+      "title-kz": "Сыбайлас жемқорлыққа қарсы іс-қимыл туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-adminProcedures",
+      "title": "Административный процедурно-процессуальный кодекс РК",
+      "title-kz": "Қазақстан Республикасының әкімшілік рәсімдік-процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "4-advocacyAndLegalAssistance",
+      "title": "Закон «Об адвокатской деятельности и юридической помощи»",
+      "title-kz": "Адвокаттық қызмет және заң көмегі туралы",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 30,
+  "pricePerTestHigh": 50
+}

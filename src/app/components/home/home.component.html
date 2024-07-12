@@ -1,0 +1,71 @@
+<section class="home">
+  <div class="container">
+    <h2 class="home__title text-center mb-5">
+      {{ 'HOME.TITLE' | translate }}
+    </h2>
+
+    <div class="row justify-content-center row-gap-4 mb-5">
+        @for (block of blocks; track block.id; let i = $index) {
+          <div class="col-6 col-md-2">
+            <div class="blocks__item" (click)="onBlockSelect(block.id)">
+              <div class="image"
+                   [style.background-image]="'url(assets/images/blocks/'+ block.id + '-' + languageService.lg +'.png)'"
+              >
+                <img src="../../../assets/images/placeholders/placeholder.svg" alt="placeholder">
+              </div>
+              <p>
+                {{ block.title | translate }}
+              </p>
+            </div>
+          </div>
+        }
+    </div>
+    <div class="row justify-content-center mb-5">
+      <div class="col-11 col-md-10">
+        <div class="benefits">
+          <div class="row gap-5 gap-md-0">
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/goblet.png" alt="goblet">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_1' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_1' | translate }}
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/schedule.png" alt="schedule">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_2' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_2' | translate }}
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/ux.png" alt="ux">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_3' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_3' | translate }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="about" class="row">
+      <div class="col-12" [innerHTML]="this.translateService.instant('HOME.INFO')"></div>
+    </div>
+  </div>
+</section>

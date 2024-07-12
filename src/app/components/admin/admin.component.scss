@@ -1,0 +1,143 @@
+.admin {
+  min-height: calc(100vh - 56px);
+  padding: 2.5rem 0;
+
+  section {
+    padding: 0 !important;
+  }
+
+  &__header{
+    background-size: cover;
+    position: relative;
+    padding: 0;
+    & > * {
+      position: relative;
+      z-index: 2;
+    }
+    &:before{
+      content: '';
+      background: rgba(19, 18, 49, .5);
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+    .row{
+      height: 40vh;
+    }
+  }
+  &__section-title{
+    margin-bottom: 45px;
+  }
+  &__sub-title{
+    margin: 0;
+  }
+  .btn-group {
+    background: #131231;
+    border-radius: 50px;
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    padding: 5px;
+  }
+
+  .accordion-button {
+    padding: .5rem 1rem !important;
+  }
+
+  .input-group {
+    .btn-outline-secondary {
+      border-radius: 0 .375rem .375rem 0;
+      z-index: 0;
+    }
+  }
+}
+.table{
+  background: white;
+  border-radius: 5px !important;
+  overflow: hidden;
+  font-size: 15px;
+  letter-spacing: -0.5px;
+}
+.json-viewer{
+  background: rgba(255, 255, 255, 1);
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+.btn_select {
+  display: inline-block;
+  vertical-align: middle;
+  background: #131231;
+  color: #fff;
+  border: solid 1px;
+  padding: 5px 25px;
+  border-radius: 22px;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+.table__title {
+  font-size: 21px;
+  font-weight: 600;
+}
+.my-pagination ::ng-deep {
+  .ngx-pagination {
+    padding: 0;
+    li:first-child,
+    li:last-child{
+      span,
+      a{
+        font-size: 0;
+        &:before,
+        &:after{
+          font-size: 16px;
+        }
+      }
+    }
+    .current {
+      background: #131231;
+      border-radius: 10px;
+    }
+  }
+}
+
+.mode-switcher {
+  background: var(--dark-color);
+  border: solid 1px var(--dark-color);
+  border-radius: 52px;
+  padding: 3px;
+  display: inline-block;
+  vertical-align: middle;
+  width: auto;
+  margin-right: 1rem;
+
+  &__btn {
+    //width: 40px;
+    height: 32px;
+    border-radius: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 21px;
+    outline: none !important;
+    color: #fff;
+    padding: 0 1rem;
+
+    &.active {
+      background: var(--bs-blue);
+    }
+  }
+  &-top {
+    display: none;
+  }
+}
+
+::ng-deep {
+  .ngx-pagination .current {
+    background: var(--bs-blue) !important;
+  }
+}

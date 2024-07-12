@@ -1,0 +1,284 @@
+<section class="test"
+         [class.test-bg]="!test"
+         [class.test-full]="testFinished"
+         [class.test-pb]="testStarted"
+>
+  <div class="container-fluid container-xxl h-100 d-flex flex-column">
+    <h2 class="test__title">
+      @if (showSelectTests && block) {
+        {{ block.title | translate }}
+      } @else if (!showSelectTests && test) {
+        {{ languageService.lg === 'ru' ? test!.title : test!['title-kz'] }}
+      }
+    </h2>
+
+    @if (!testStarted) {
+      <div class="d-flex flex-column justify-content-between flex-grow-1">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb row-gap-3">
+            @for (item of breadcrumb; track item.name; let i = $index) {
+              <li class="breadcrumb-item active" [class.active]="breadcrumb.length === i + 1">
+                @if (breadcrumb.length !== i + 1) {
+                  <a (click)="breadcrumbNavigate(item, i + 1)">{{ i === 0 ? (item.name | translate) : item.name }}</a>
+                } @else {
+                  {{ item.name }}
+                }
+              </li>
+            }
+          </ol>
+        </nav>
+
+        @if (testsData.length > 1 && !test) {
+          <div class="row row-gap-3 select mb-auto">
+            @for (testItem of testsData; track testItem.id) {
+              <div class="col-12 col-md-4">
+                <div class="select__item card" (click)="onSelectExam(testItem)">
+                  <h5>
+                    {{ languageService.lg === 'ru' ? testItem!.title : testItem!['title-kz'] }}
+                  </h5>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (test) {
+          <h5 class="d-flex justify-content-between flex-column flex-md-row mb-3  row-gap-3">
+            {{ 'TEST.SELECT_LAWS' | translate }}
+            @if (user) {
+              <div class="d-flex flex-column justify-content-end gap-2">
+                <div>
+                  {{ 'TEST.BALANCE' | translate }} {{ userTestBalance }}{{ 'TEST.CURRENCY' | translate }}
+                </div>
+                @if (userTestExpirationDate) {
+                  <p class="opacity-50">
+                    {{ 'TEST.VALID_TILL' | translate }}  {{ userTestExpirationDate | toDateFormat }}
+                  </p>
+                }
+              </div>
+            }
+          </h5>
+
+          <div class="form-check form-switch">
+            <input (change)="onSwitchTestMode($event)" class="form-check-input" type="checkbox" role="switch"
+                   id="switchMode">
+            <label class="form-check-label" for="switchMode">{{ 'TEST.ANSWERS_SHOW' | translate }}</label>
+          </div>
+
+          <p class="my-3">
+            <strong>
+              {{ 'TEST.PRICE_PER_LAW' | translate }}
+              {{ !answersVisibleMode ? test.pricePerTest : test.pricePerTestHigh }}
+              {{ 'TEST.CURRENCY' | translate }}
+            </strong>
+          </p>
+
+          @if (examBuilderForm) {
+            <form [formGroup]="examBuilderForm"
+                  (submit)="onStartTest()"
+                  (change)="calculateExamPrice()"
+                  class="d-flex flex-column flex-grow-1"
+            >
+              @for (law of test.topics; track law.id) {
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" formControlName="{{ law.id }}" id="{{ law.id }}">
+                  <label class="form-check-label" for="{{ law.id }}">
+                    {{ languageService.lg === 'ru' ? law.title : law['title-kz'] }}
+                  </label>
+                </div>
+              }
+
+              <h5 class="my-3">
+                <strong>{{ 'TEST.PRICE' | translate }} {{ totalExamPrice }} {{ 'TEST.CURRENCY' | translate }}</strong>
+              </h5>
+
+              <button type="submit" class="btn btn-primary">
+                {{ 'TEST.START' | translate }}
+              </button>
+            </form>
+          }
+
+          <div class="invalid-feedback mt-3">
+            @if (isNoLawsSelected) {
+              {{ 'TEST.NO_LAWS' | translate }}
+            }
+            @if (isNoMoneyError) {
+              {{ 'TEST.NO_MONEY' | translate }}
+            }
+          </div>
+        }
+      </div>
+    } @else {
+
+      <div class="row flex-grow-1">
+        @if (!testFinished && testStarted) {
+          <div class="col-12">
+            <div class="d-flex flex-column h-100">
+              <ul class="topic-progress__list">
+                @for (law of test?.topics; let i = $index; track law.id) {
+                  <li [class.active]="law.id === activeLaw"
+                      class="me-2"
+                      (click)="onSelectLaw(law.id)">
+                    <p>
+                      @if (!law.isSectionCompleted) {
+                        {{activeLanguage === 'kz' ? law['title-kz'] : law.title}}
+                      } @else {
+                        {{activeLanguage === 'kz' ? law['title-kz'] : law.title}} <span class="ms-2">&#10003;</span>
+                      }
+                    </p>
+                  </li>
+                }
+              </ul>
+
+              @if (!testFinished && testStarted) {
+                @for (law of test!.topics; track law.id) {
+                  @if (law.id === activeLaw) {
+                    @for (item of law.questions; let q = $index; track item.title) {
+
+                      @if (activeQuestion === (q)) {
+                        <div class="test__question question">
+                          <p class="question__title">{{ item?.title }}</p>
+
+                          @if (item?.type === 'radio') {
+                            <div class="d-flex flex-column">
+                              @for (variant of item?.choices; let v = $index; track variant) {
+                                <div class="form-check question__variant">
+                                  <input class="form-check-input"
+                                         type="radio"
+                                         name="questionVariants"
+                                         id="{{'variant' + v}}"
+                                         [checked]="variant === item?.selectedAnswer"
+                                         [value]="variant"
+                                         [name]="'q' + (q + 1)"
+                                         (change)="onSelectVariant($event, law)"
+                                  >
+                                  <label class="form-check-label" for="{{'variant' + v}}">
+                                    {{ variant }}
+                                  </label>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          <div class="question__footer mt-3">
+                            <button class="btn btn-secondary"
+                                    [disabled]="activeLaw === test!.topics[0].id && activeQuestion === 1"
+                                    (click)="onPrevQuestion()">{{ 'TEST.PREV_QUESTION' | translate }}
+                            </button>
+                            @if (answersVisibleMode) {
+                              <button class="btn btn-outline-primary"
+                                      [disabled]="law.questions[activeQuestion].selectedAnswer"
+                                      (click)="onSetAnswer(law)">{{ 'TEST.SET_ANSWER' | translate }}
+                              </button>
+                            }
+                            <button class="btn btn-primary"
+                                    (click)="onNextQuestion()"
+                                    [disabled]="answersVisibleMode && !item.selectedAnswer"
+                            >
+                              {{ (isLastQuestion ? 'EXAM.END_TEST' : 'TEST.NEXT_QUESTION') | translate }}
+                            </button>
+                          </div>
+
+                          @if (answersVisibleMode && item.selectedAnswer) {
+                            <div class="question__answer"
+                                 [class.question__answer-correct]="item.selectedAnswer === item.correctAnswer"
+                                 [class.question__answer-wrong]="item.selectedAnswer !== item.correctAnswer"
+                            >
+                              <div class="header p-2">
+                                {{ 'TEST.CORRECT_ANSWER' | translate }}{{ item.selectedAnswer === item.correctAnswer ? '!' : ':' }}
+                              </div>
+                              @if (item.selectedAnswer !== item.correctAnswer) {
+                                <p class="p-2 mb-0">
+                                  {{ item.correctAnswer }}
+                                </p>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+                  }
+                }
+                @if (topicById(activeLaw).questions.length > 1) {
+                  <ul class="question-progress__list">
+                    @for (question of topicById(activeLaw).questions; let i = $index; track question.title) {
+                      <li [class.active]="activeQuestion === i"
+                          [class.answered]="question?.selectedAnswer"
+                          (click)="onSelectQuestion(i)">
+                        {{i + 1}}
+                      </li>
+                    }
+                  </ul>
+                }
+              }
+            </div>
+          </div>
+        }
+        @if (testFinished) {
+          <h5>
+            {{ 'TEST.RESULT' | translate }} {{ correctAnswersSumm }} / {{ totalQuestionsAmount }}
+          </h5>
+          @for (law of test!.topics; track law.id) {
+              @for (item of law.questions; let q = $index; track item.title) {
+                <div class="col-12">
+                  <div class="question question-sm">
+                    <p class="question__title">{{ item?.title }}</p>
+
+                    @if (item?.type === 'radio') {
+                      <div class="d-flex flex-column">
+                        @for (variant of item?.choices; let v = $index; track variant) {
+                          <div class="form-check question__variant">
+                            <input class="form-check-input"
+                                   type="radio"
+                                   disabled
+                                   name="questionVariants"
+                                   id="{{'variant' + v}}"
+                                   [checked]="variant === item?.selectedAnswer"
+                                   [value]="variant"
+                                   [name]="'q' + (q + 1)"
+                                   (change)="onSelectVariant($event, law)"
+                            >
+                            <label class="form-check-label"
+                                   [class.correct]="variant === item.correctAnswer"
+                                   [class.wrong]="variant === item.selectedAnswer && item.selectedAnswer !== item.correctAnswer"
+                                   for="{{'variant' + v}}"
+                            >
+                              {{ variant }}
+                            </label>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+          }
+          <div class="col-4">
+            <button class="btn btn-primary mt-2" (click)="backToTest()">
+              Пройти тест еще раз
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (testsData.length > 1 && !test && !testStarted) {
+      <div class="test__arrows">
+        <img src="assets/icons/down-arrow.svg" alt="">
+      </div>
+    }
+  </div>
+</section>
+@if (((block && !test && testsData.length > 1) || (block && test && testsData.length === 1)) && (languageService.lg === 'ru' ? block.description : block['description-kz']) && !testStarted) {
+  <section class="description">
+    <div class="container-fluid container-xxl"
+         [innerHtml]="languageService.lg === 'ru' ? block.description : block['description-kz']">
+    </div>
+  </section>
+}
+
+<ng-template #confirmModal>
+  <div class="modal-body text-center">
+    <p>{{ 'TEST.CONFIRMATION_START' | translate }}</p>
+    <button type="button" class="btn btn-default" (click)="decline()">{{ 'TEST.DECLINE' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'TEST.START' | translate }}</button>
+  </div>
+</ng-template>

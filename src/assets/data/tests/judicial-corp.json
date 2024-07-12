@@ -1,0 +1,107 @@
+{
+  "id": "judicialCorp",
+  "title": "Судебный корпус",
+  "title-kz": "Сот корпусы",
+  "topics": [
+    {
+      "id": "9-constitution",
+      "title": "Конституция РК",
+      "title-kz": "Қазақстан Республикасының Конституциясы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-adminOffenses",
+      "title": "Кодекс об административных правонарушениях",
+      "title-kz": "Әкімшілік құқық бұзушылық туралы кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-adminProcedures",
+      "title": "Административный процедурно-процессуальный кодекс",
+      "title-kz": "Қазақстан Республикасының әкімшілік рәсімдік-процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-civilCode",
+      "title": "Гражданский кодекс РК",
+      "title-kz": "Қазақстан Республикасының азаматтық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-civilProcedureCode",
+      "title": "Гражданский процессуальный кодекс Республики Казахстан",
+      "title-kz": "Қазақстан Республикасының Азаматтық процестік кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-codeOfCriminalProcedure",
+      "title": "Уголовный кодекс РК",
+      "title-kz": "Қазақстан Республикасының Қылмыстық кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-criminalProcedure",
+      "title": "Уголовно-процессуальный кодекс",
+      "title-kz": "Қазақстан Республикасының Қылмыстық-процестік кодексi",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-workCode",
+      "title": "Трудовой кодекс РК",
+      "title-kz": "Қазақстан Республикасының Еңбек Кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-familyCode",
+      "title": "Кодекс «О браке (супружестве) и семье»",
+      "title-kz": "Неке (ерлі-зайыптылық) және отбасы туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-jointStockCompanies",
+      "title": "Закон «Oб акционерных обществах»",
+      "title-kz": "Акционерлік қоғамдар туралы» ҚРЗ",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-stocksAndBodsMarket",
+      "title": "Закон «О рынке ценных бумаг»",
+      "title-kz": "«Бағалы қағаздар рыногы туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-copyrightLaw",
+      "title": "Закон «Об авторском праве и смежных правах»",
+      "title-kz": "«Авторлық құқық және сабақтас құқықтар туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-patentLaw",
+      "title": "Патентный закон РК",
+      "title-kz": "ҚР Патент Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "9-childrenRights",
+      "title": "Закон «О правах ребенка в РК»",
+      "title-kz": "«ҚР баланың құқықтары туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 30,
+  "pricePerTestHigh": 50
+}

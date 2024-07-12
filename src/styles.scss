@@ -1,1 +1,84 @@
-/* You can add global styles to this file, and also import other style files */
+@import "assets/css/variables";
+
+html,
+body,
+ul,
+ol,
+li,
+button,
+input,
+textarea,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: Montserrat, sans-serif;
+  font-size: 16px;
+  line-height: 1;
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+section {
+  padding: 2.5rem 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.breadcrumb-item {
+  a {
+    color: #0d6efd !important;
+    cursor: pointer;
+  }
+}
+.breadcrumb-item.active {
+  color: initial !important;
+}
+
+.form {
+  &-label {
+    margin-bottom: .15rem !important;
+    font-size: .85rem !important;
+    font-family: Montserrat, sans-serif !important;
+    color: var(--light-text);
+  }
+
+  &-control {
+    &::placeholder {
+      font-family: Montserrat, sans-serif !important;
+      opacity: .6 !important;
+    }
+  }
+}
+
+.invalid-feedback {
+  display: block !important;
+  position: absolute;
+  bottom: -1.5rem;
+  font-family: Montserrat, sans-serif;
+  color: #ff3737 !important;
+}
+
+.btn-link {
+  color: var(--light-text) !important;
+}
+
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+}

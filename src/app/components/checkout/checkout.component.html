@@ -1,0 +1,44 @@
+<div class="checkout">
+  <div class="container container-xxl h-100 d-flex flex-column">
+
+    <h2 class="checkout__title text-center">
+      {{ 'CHECKOUT.TITLE' | translate }}
+    </h2>
+
+    <div class="dropdown flex-grow-1 d-flex justify-content-center align-items-center">
+      <button class="btn btn-primary dropdown-toggle w-50 mb-3 mb-md-0"
+              [class.btn-danger]="noBlockSelectedError"
+              type="button" id="dropdownMenuButton1"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+      >
+        {{ !selectedBlock ? ("CHECKOUT.SELECT_PROGRAM" | translate) : (selectedBlock.title | translate) }}
+      </button>
+      <ul class="dropdown-menu w-50" aria-labelledby="dropdownMenuButton1">
+        @for (block of blocks; track block.id) {
+          <li class="dropdown-item" (click)="onSelectBlock(block)">
+            {{ block.title | translate }}
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="row justify-content-center align-items-center flex-column flex-md-row row-gap-3 flex-grow-1">
+      @for (item of checkoutItems; track item.id) {
+        <div class="col-12 col-md-3">
+          <div class="checkout__item" (click)="onSelectCard(item.id)">
+            <p class="m-0">
+              {{ 'CHECKOUT.BUY' | translate }}
+            </p>
+            <h3>
+              {{ item.price }} тг.
+            </h3>
+            <button class="btn btn-light">
+              {{ 'CHECKOUT.SELECT' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+{
+  "id": "headOfEducationalOrganization",
+  "title": "Руководитель организации образования",
+  "title-kz": "Білім беру ұйымының басшысы",
+  "topics": [
+    {
+      "id": "7-workCode",
+      "title": "Трудовой кодекс РК",
+      "title-kz": "Қазақстан Республикасының Еңбек Кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-educationLaw",
+      "title": "Закон «Об образовании»",
+      "title-kz": "Білім туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-antiCorruption",
+      "title": "Закон «O противодействии коррупции»",
+      "title-kz": "Сыбайлас жемқорлыққа қарсы іс-қимыл туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-tutorStatusLaw",
+      "title": "Закон «О статусе педагога»",
+      "title-kz": "Педагог мәртебесі туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-familyCode",
+      "title": "Кодекс «О браке (супружестве) и семье»",
+      "title-kz": "Неке (ерлі-зайыптылық) және отбасы туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-childrenRights",
+      "title": "Закон «О правах ребенка в РК»",
+      "title-kz": "«ҚР баланың құқықтары туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-approvalOfStandards",
+      "title": "«Об утверждении государственных общеобязательных стандартов дошкольного воспитания и обучения…»",
+      "title-kz": "Мемлекеттік жалпыға міндетті стандарттарын бекіту туралы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "7-typicalRules",
+      "title": "«Об утверждении Типовых правил деятельности организаций образования…»",
+      "title-kz": "Білім беру ұйымдарынының үлгілік қағидаларын бекіту туралы",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 10,
+  "pricePerTestHigh": 30
+}

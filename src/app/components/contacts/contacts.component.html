@@ -1,0 +1,21 @@
+<div class="contacts">
+  <div class="container container-xxl h-100 d-flex flex-column">
+    <h2 class="contacts__title text-center">
+      {{ 'CONTACTS.TITLE' | translate }}
+    </h2>
+    <h5 class="contacts__title text-center">
+      {{ 'CONTACTS.SUB_TITLE' | translate }}
+    </h5>
+
+    <div class="row justify-content-center align-items-center flex-grow-1 flex-wrap">
+      @for (item of contacts; track item.id) {
+        <div class="col-4 col-md-3">
+          <a class="contacts__item" href="{{ item.url }}" target="_blank">
+            <i class="bi bi-{{item.name.replace('-', '').toLowerCase()}}"></i>
+            {{ item.name }}
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</div>

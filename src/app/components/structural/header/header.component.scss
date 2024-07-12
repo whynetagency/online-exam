@@ -1,0 +1,30 @@
+.language-switcher {
+  background: var(--dark-color);
+  border: solid 1px var(--dark-color);
+  border-radius: 52px;
+  padding: 3px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 1rem;
+
+  &__btn {
+    width: 40px;
+    height: 32px;
+    border-radius: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 21px;
+    outline: none !important;
+    color: #fff;
+    &.active {
+      background: var(--bs-blue);
+    }
+  }
+  &-top {
+    display: none;
+  }
+}

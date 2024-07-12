@@ -1,0 +1,21 @@
+<div class="bottom-section">
+  <div class="container">
+    <div class="row align-items-center justify-content-between justify-content-lg-start">
+      <!--<div class="col-lg-2 col-1 d-none-mobile">
+        <img src="/assets/images/visa-master.png" class="bottom-section__logo" alt="Kyzmet Logo">
+      </div>-->
+      <div class="col-xs-12 col-sm-12 col-lg-8 col-md-8">
+        <ul class="bottom-section__list">
+          <li class="nav-item"
+              *ngFor="let item of navItems"
+              [ngClass]="{'active': isActiveLink(item.link)}">
+            <a class="nav-link" [routerLink]="'..' + item.link">{{item.title | translate}}</a>
+          </li>
+        </ul>
+      </div>
+      <div class="bottom-section__system">
+        <img src="/assets/images/visa-master.png" class="bottom-section__logo" alt="visa mastercard">
+      </div>
+    </div>
+  </div>
+</div>

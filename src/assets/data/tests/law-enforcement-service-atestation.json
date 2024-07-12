@@ -1,0 +1,44 @@
+{
+  "id": "lawEnforcementServiceAtestation",
+  "title": "Аттестация и прочие законы",
+  "title-kz": "Аттестаттау және өзге де заңдар",
+  "topics": [
+    {
+      "id": "2-lawOfInternalAffairs",
+      "title": "Зaкoн «Об органах внутренних дел РК»",
+      "title-kz": "«ҚР iшкi iстер органдары туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "2-ethicalCodeOfficers",
+      "title": "Этический кодекс сотрудников правоохранительных органов РК",
+      "title-kz": "ҚР құқық қорғау органдары қызметкерлерінің Әдеп кодексі",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "2-operationalSearchActivities",
+      "title": "Зaкoн «Об оперативно-розыскной деятельности»",
+      "title-kz": "«Жедел-iздестiру қызметi туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "2-stateSecrets",
+      "title": "Зaкoн «О государственных секретах»",
+      "title-kz": "«Мемлекеттік құпиялар туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    },
+    {
+      "id": "2-legalFinances",
+      "title": "Зaкoн «О противодействии легализации (отмыванию) доходов, полученных преступным путем, и финансированию терроризма»",
+      "title-kz": "«Қылмыстық жолмен алынған кірістерді заңдастыруға (жылыстатуға) және терроризмді қаржыландыруға қарсы іс-қимыл туралы» ҚР Заңы",
+      "questions": [],
+      "questionsCount": 15
+    }
+  ],
+  "pricePerTest": 10,
+  "pricePerTestHigh": 30
+}
