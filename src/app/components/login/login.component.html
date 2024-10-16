@@ -69,9 +69,14 @@
             >
               {{ 'HEADER.LOGIN' | translate }}
             </button>
-            <button class="btn btn-link" (click)="router.navigate(['/register'])">
-              {{ 'LOGIN.CREATE_ACC' | translate }}
-            </button>
+            <div>
+              <button class="btn btn-link" (click)="router.navigate(['/password-reset'])">
+                {{ 'LOGIN.PASSWORD_RESET' | translate }}
+              </button>
+              <button class="btn btn-link" (click)="router.navigate(['/register'])">
+                {{ 'LOGIN.CREATE_ACC' | translate }}
+              </button>
+            </div>
           </div>
         </form>
       </div>

@@ -9,7 +9,7 @@ import {UserService} from "./user.service";
 export class LoaderService {
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  noLoaderUrls = ['sign-in', 'sign-up', 'privacy-policy', 'offer-agreement'];
+  noLoaderUrls = ['sign-in', 'sign-up', 'password-reset', 'privacy-policy', 'offer-agreement', 'payments'];
 
   constructor(
       private router: Router,

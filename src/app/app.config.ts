@@ -8,7 +8,7 @@ import {getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {getStorage, provideStorage} from "@angular/fire/storage";
 import {HttpClient, provideHttpClient} from "@angular/common/http";
 import {FIREBASE_OPTIONS} from "@angular/fire/compat";
-import {environment} from "./environments/environment";
+import {environment} from "../environments/environment";
 import {MissingTranslationHandler, TranslateLoader, TranslateModule} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 import {MissingTranslationService} from "./shared/services/missing-translation.service";

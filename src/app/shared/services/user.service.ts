@@ -6,6 +6,7 @@ import {collection, doc, Firestore, getDoc, setDoc, updateDoc} from "@angular/fi
 import {createUserWithEmailAndPassword} from "@angular/fire/auth";
 import dayjs from "dayjs";
 import {LoaderService} from "./loader.service";
+import {sendPasswordResetEmail} from "@firebase/auth";
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,15 @@ export class UserService {
   async signIn(data: ISignInData) {
     try {
       return signInWithEmailAndPassword(this.auth, data.email, data.password);
+    } catch (error) {
+      console.error('Error sign in:', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(data: ISignInData) {
+    try {
+      return sendPasswordResetEmail(this.auth, data.email);
     } catch (error) {
       console.error('Error sign in:', error);
       throw error;

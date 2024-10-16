@@ -82,3 +82,20 @@ input[type=number]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
 }
+
+.static{
+  .pp{
+    &__title{
+      font-weight: 600;
+      margin: 20px 0;
+      text-transform: uppercase;
+    }
+    &__text{
+      margin-bottom: 10px;
+    }
+  }
+  a{
+    display: inline-block;
+    margin: 0 5px;
+  }
+}

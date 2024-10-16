@@ -21,10 +21,13 @@
     outline: none !important;
     color: #fff;
     &.active {
-      background: var(--bs-blue);
+      background: #7095c3;
     }
   }
   &-top {
     display: none;
   }
+}
+header .navbar {
+  background: #ede0c9 !important;
 }

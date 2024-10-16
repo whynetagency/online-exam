@@ -24,6 +24,7 @@ export class BottomSectionComponent {
     {title: 'HEADER.NAV.PAYMENTS', link: '/checkout'},
     {title: 'PUBLIC_OFFER_AGREEMENT.PAGE_TITLE', link: '/offer-agreement'},
     {title: 'PRIVACY_POLICY.PAGE_TITLE', link: '/privacy-policy'},
+    {title: 'PAYMENTS.PAGE_TITLE', link: '/payments'}
   ];
 
   constructor(
