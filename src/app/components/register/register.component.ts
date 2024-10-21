@@ -22,6 +22,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
     isPasswordIncorrect = false;
     showErrors = false;
+    passwordLengthError = false;
+    emailAlreadyUsed = false
 
     destroy$ = new Subject();
 
@@ -81,7 +83,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
     createAccount() {
         this.loaderService.loading$.next(true);
-        //this.userService.isLoginGuardDisabled = true;
 
         this.userService.createUser({
             email: this.registerForm.value.email,
@@ -90,9 +91,18 @@ export class RegisterComponent implements OnInit, OnDestroy {
             password: this.registerForm.value.password
         }).then(async () => {
             this.router.navigate(['/home']).then(async () => {
-                //await this.userService.sendVerificationEmail();
-                //this.userService.isLoginGuardDisabled = false;
             });
+        }).catch(error => {
+          this.showErrors = true;
+          if (error.code === 'auth/email-already-in-use') {
+            this.emailAlreadyUsed = true;
+          }
+          if (error.code === 'auth/weak-password') {
+            this.passwordLengthError = true;
+            this.isPasswordIncorrect = true;
+          }
+          this.loaderService.loading$.next(false)
+          console.log(error);
         })
     }
 }

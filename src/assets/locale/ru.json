@@ -65,7 +65,8 @@
     "PASSWORD_WRONG": "Неправильный пароль или емейл",
     "CREATE_ACC": "Создать аккаунт",
     "PASSWORD_FORGOT": "Забыли пароль?",
-    "RESET_PASSWORD": "Сбросить пароль"
+    "RESET_PASSWORD": "Сбросить пароль",
+    "USED_EMAIL": "Этот адрес электронной почты уже используется. Попробуйте другой."
   },
   "FOOTER": {
     "COPYRIGHT": "© 2024. All Rights Reserved.",
