@@ -18,7 +18,7 @@ export class DisableContextDirective implements OnInit {
   constructor(private renderer: Renderer2) { }
 
   ngOnInit() {
-    // this.disableContext();
+    this.disableContext();
   }
 
   disableContext() {

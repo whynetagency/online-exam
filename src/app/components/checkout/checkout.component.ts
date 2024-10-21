@@ -48,8 +48,7 @@ export class CheckoutComponent implements OnInit {
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
-    //TODO: after Test set min to 1000
-    this.amount = new FormControl(1, [Validators.required, Validators.min(1)]);
+    this.amount = new FormControl(1000, [Validators.required, Validators.min(1000)]);
   }
 
   onSelectBlock(block: IBlockItem) {
