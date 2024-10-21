@@ -1,19 +1,21 @@
-import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import {INavigationItem} from "../../shared/models/structures.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {NgClass, NgIf} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import { DatePipe, NgClass, NgForOf, NgIf } from "@angular/common";
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import {LoaderService} from "../../shared/services/loader.service";
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {UserService} from "../../shared/services/user.service";
 import {DatabaseService} from "../../shared/services/database.service";
-import {Subject, take, takeUntil} from "rxjs";
+import { combineLatest, filter, map, Subject, takeUntil } from "rxjs";
 import {IUser} from "../../shared/models/user.model";
 import {ToDateFormatPipe} from "../../shared/pipes/to-date-format.pipe";
-import {IBlockItem} from "../../shared/models/exam.model";
+import { IBlockItem, ILaw, ITest } from "../../shared/models/exam.model";
 import {TranslateModule} from "@ngx-translate/core";
 import {NgxPaginationModule} from "ngx-pagination";
 import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
+import dayjs from "dayjs";
+import { BsModalRef, BsModalService, ModalModule } from "ngx-bootstrap/modal";
 
 @Component({
   selector: 'app-admin',
@@ -26,28 +28,33 @@ import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
     ToDateFormatPipe,
     TranslateModule,
     NgxPaginationModule,
-    UserSearchPipe
+    UserSearchPipe,
+    DatePipe,
+    NgForOf,
+    ReactiveFormsModule,
+    ModalModule
   ],
+  providers: [BsModalService],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
   encapsulation: ViewEncapsulation.None
 })
 export class AdminComponent implements OnInit, OnDestroy {
+  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   uploadSuccess = false;
-  isLoading = true;
+  selectedUser: any;
+  balanceForm!: FormGroup;
+  modalRef?: BsModalRef;
   users: IUser[] = [];
   blocks: IBlockItem[] = [];
-  /*
-  commonUsers: IUser[] = [];
-  usersSortedByRequest: IUser[] = [];
-  products: IProduct[] = [];*/
-  searchUser = '';
+  laws: ILaw[] = [];
+  groupedLaws: any[] = [];
   lessonResult: any = [];
   p1 = 1;
   p2 = 1;
   p3 = 1;
 
-  activeMode: 'users' | 'documents' = 'documents';
+  activeMode: 'users' | 'documents' | 'laws' = 'users';
 
   navigation: INavigationItem[] = [
     { title: 'Пользователи', view: 'users', img: 'settings', isVisible: true},
@@ -55,52 +62,76 @@ export class AdminComponent implements OnInit, OnDestroy {
     { title: 'Телефоны', view: 'phones', img: 'settings', isVisible: true},
   ];
 
-  activeView = 'exams';
+  lawsBlockTitleMap = new Map<string, string>([
+    ['1', 'Административная служба (КОРПУС Б)'],
+    ['2', 'Правоохранительная служба'],
+    ['3', 'Нотариат'],
+    ['4', 'Адвокатура'],
+    ['5', 'НАО «Правительство для граждан'],
+    ['6', 'Руководитель организации образования'],
+    ['7', 'Судебный корпус'],
+    ['8', 'Частный судебный исполнитель'],
+    ['9', 'КОРПУС А (Руководитель аппарата или Председатель)'],
+  ])
+
   selectedFiles: (File | undefined | any)[] = [];
-  phoneNumber!: string;
 
   allFilesLoaded = false;
 
   searchField = '';
 
-  destroy$ = new Subject();
+  destroy$ = new Subject<void>();
 
   constructor(
-      public afs: AngularFirestore,
-      private loaderService: LoaderService,
-      private userService: UserService,
-      private databaseService: DatabaseService
+    public afs: AngularFirestore,
+    private loaderService: LoaderService,
+    private userService: UserService,
+    private databaseService: DatabaseService,
+    private modalService: BsModalService,
   ) {
-    this.userService.getUserData()
+    this.userService.getUserData();
+    this.balanceForm = new FormGroup({
+      blockId: new FormControl('', Validators.required),
+      balance: new FormControl([0, [Validators.required, Validators.min(0)]]),
+    });
   }
 
   ngOnInit(): void {
+    this.balanceForm.controls['blockId'].valueChanges.subscribe(value => {
+      this.balanceForm.controls['balance'].setValue(this.selectedUser.balances[value].amount)
+    })
     this.databaseService.getBlocks();
     this.databaseService.getAllUsers();
+    this.databaseService.getAllLaws()
 
-    this.databaseService.users$.pipe(takeUntil(this.destroy$)).subscribe(users => {
-      this.users = users;
+    combineLatest({
+      users: this.databaseService.users$.pipe(),
+      blocks: this.databaseService.blocks.pipe(),
+      laws: this.databaseService.laws$.pipe(),
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ({ users, blocks , laws}) => {
+        this.users = users;
+        this.blocks = blocks.sort((a, b) => a.order - b.order);
+        this.blocks.pop(); // remove PDD block
+        this.laws = laws;
+        this.groupLawsByBlock();
+      },
+      error: (err) => console.error('Error loading data:', err),
+      complete: () => this.loaderService.loading$.next(false),
     });
-
-    this.databaseService.blocks.pipe(takeUntil(this.destroy$)).subscribe(blocks => {
-      this.blocks = blocks;
-    })
-
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
   }
 
   ngOnDestroy() {
-    this.destroy$.next(true);
+    this.destroy$.next();
     this.destroy$.complete();
   }
 
-  onChangeMode(mode: 'users' | 'documents'): void {
+  onChangeMode(mode: 'users' | 'documents' | 'laws'): void {
     this.loaderService.loading$.next(true);
-
     this.activeMode = mode;
-
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
@@ -111,58 +142,19 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.p1 = 1;
   }
 
-  /*onGetProducts(): void {
-    if (this.products.length < 1) {
-      this.isLoading = true;
-      this.afs
-          .collection('products')
-          .snapshotChanges()
-          .pipe(map(j => j.map(i => i.payload.doc.data() as IProduct)))
-          .subscribe((resp: IProduct[]) => {
-            this.products.length = 0;
-            this.products = resp;
-            this.onGetUsers();
-          });
-    }
+  openBalanceModal(user: IUser, content: TemplateRef<any>) {
+    this.selectedUser = user;
+    this.balanceForm.controls['balance'].setValue(user.balances)
+    this.modalRef = this.modalService.show(content);
   }
 
-  onGetUsers(): void {
+  deleteLaw(id: string): void {
     this.afs
-        .collection('users')
-        .snapshotChanges()
-        .pipe(map(j => j.map(i => i.payload.doc.data() as IUser)))
-        .subscribe((resp: IUser[]) => {
-          this.users.length = 0;
-          this.users = resp;
-          this.commonUsers = resp;
-          this.usersSortedByRequest = [...resp.filter(u => u.request && u.request.product && u.request.time)].sort((a, b) => {
-            // @ts-ignore
-            return new Date(a.request.time.seconds * 1000 + a.request.time.nanoseconds / 1e6) < new Date(b.request.time.seconds * 1000 + b.request.time.nanoseconds / 1e6) ? 1 : -1;
-          });
-          this.users = this.commonUsers;
-          this.users.filter(u => dayjs(u.expirationDate) < dayjs()).forEach(u => this.onSuspendAccess(u, 1));
-          this.isLoading = false;
-        });
-  }*/
-
-  /*getActiveUsers(users: IUser[]): IUser[] {
-    return users.filter(u => u.product && u.expirationDate);
-  }
-
-  getExpiredUsers(users: IUser[]): IUser[] {
-    return users.filter(u => u.product && !u.expirationDate);
-  }
-
-  getRequests(users: IUser[]): IUser[] {
-    return users.filter(u => u.request && u.request.product);
-  }
-
-  onGetProductDetails(productId: string): IProduct {
-    return this.products.find(p => p.id === productId);
-  }*/
-
-  getDate(d: any): any {
-    return d ? new Date(d.seconds * 1000 + d.nanoseconds / 1000000) : null;
+      .collection('laws')
+      .doc(id)
+      .delete()
+      .then(() => alert('Закон успішно видалено!'))
+      .catch((error) => console.error('Помилка при видаленні:', error));
   }
 
   onFileChanged(event: any): void {
@@ -175,9 +167,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       fileReader.onload = () => {
         if (typeof fileReader.result === 'string') {
           this.lessonResult.push(JSON.parse(fileReader.result));
-          console.log(this.lessonResult);
           if (this.lessonResult.length === Array.from(this.selectedFiles).length) {
-            console.log('All files loaded!');
             this.allFilesLoaded = true;
           }
         }
@@ -188,88 +178,94 @@ export class AdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  /*onGrantAccess(user: IUser): void {
-
+  onSuspendAccess(user: IUser, blockId: string): void {
     const temp = JSON.parse(JSON.stringify(user));
-    temp.product = user.request.product;
-    temp.expirationDate = dayjs().add(this.onGetProductDetails(user.request.product).duration, 'day').format('YYYY-MM-DDTHH:mm');
-    delete temp.request;
+    temp.balances[blockId].expirationDate = null;
 
     this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => {
-          alert('Доступ предоставлен');
-        });
-  }*/
+      .collection('users')
+      .doc(user.uid)
+      .set(temp)
+      .then(() => {
+        alert('Доступ приостановлен');
+      });
+  }
 
-  /*onSuspendAccess(user: IUser, log?): void {
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.expirationDate = null;
-    // temp.product = null;
+  addBalance(userId: string, blockId: string) {
+    this.databaseService.users$.pipe(
+      map((users) => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      takeUntil(this.destroy$),
+    ).subscribe(async u => {
+      u!.balances[blockId].amount = this.balanceForm.controls['balance'].value;
+      await this.userService.updateUserData('balances', u!.balances, userId);
+      this.modalRef?.hide();
+    });
+  }
 
-    this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => {
-          log ? console.log('Доступ приостановлен') : alert('Доступ приостановлен');
-        });
-  }*/
+  proceedAccess(blockId: string, userId: string): void {
+    this.databaseService.users$.pipe(
+      map((users) => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+    ).subscribe(async u => {
+      u!.balances[blockId].expirationDate = this.getExpirationDate();
 
-  /*onExtendAccess(user: IUser): void {
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.expirationDate = dayjs().add(3, 'day').format();
+      await this.userService.updateUserData('balances', u!.balances, userId);
+    });
+  }
 
-    this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => { console.log('Доступ продлен'); });
-  }*/
+  getExpirationDate(): any {
+    const now = dayjs();
+    const futureDate = now.add(2, 'month');
+    const formattedDate = futureDate.format('YYYY-MM-DD HH:mm:ss');
+    const dateInSeconds = dayjs(formattedDate).unix();
+    return { seconds: dateInSeconds };
+  }
 
   onDeleteUser(uid: string): void {
     this.afs.collection('users')
-        .doc(uid)
-        .delete()
-        .then(() => {
-          alert('Пользователь удлаен!');
-        });
+      .doc(uid)
+      .delete()
+      .then(() => {
+        alert('Пользователь удален!');
+      });
+  }
+
+  groupLawsByBlock() {
+    const grouped = this.laws.reduce((acc: { [key: string]: any[] }, law) => {
+      const blockNumber = law.id.split('-')[0];
+      if (!acc[blockNumber]) {
+        acc[blockNumber] = [];
+      }
+      acc[blockNumber].push(law);
+      return acc;
+    }, {});
+
+    this.groupedLaws = Object.entries(grouped).map(([blockId, items]) => ({
+      blockId,
+      items
+    }));
   }
 
   onRemoveFile(): void {
-    this.lessonResult = null;
+    this.lessonResult = [];
     this.selectedFiles = [];
     this.allFilesLoaded = false;
+    this.fileInput.nativeElement.value = '';
   }
 
   onUpload(type: string): void {
-    if (type === 'products') {
-      /*this.lessonResult.forEach((product: any) => {
-        this.afs
-            .collection(type)
-            .doc(product.id)
-            .set(product)
-            .then(() => {
-              this.onRemoveFile();
-              this.uploadSuccess = true;
-              setTimeout(() => this.uploadSuccess = false, 2000);
-            });
-      });*/
-    } else {
-      this.lessonResult.forEach((item: any) => {
-        this.afs
-            .collection(type)
-            .doc(item.id)
-            .set(item)
-            .then(() => {
-              this.onRemoveFile();
-              this.uploadSuccess = true;
-              setTimeout(() => this.uploadSuccess = false, 2000);
-            });
-      })
-    }
+    this.lessonResult.forEach((item: ILaw | ITest) => {
+      this.afs
+        .collection(type)
+        .doc(item.id)
+        .set(item)
+        .then(() => {
+          this.onRemoveFile();
+          this.uploadSuccess = true;
+          setTimeout(() => this.uploadSuccess = false, 2000);
+        });
+    })
   }
 
   /*onSortUsers(param: string): void {
@@ -279,14 +275,6 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.users = this.usersSortedByRequest;
     }
   }*/
-
-  saveNumber(): void {
-    if (this.phoneNumber) {
-      this.afs.collection('contacts').doc('phones').set({techSupport: this.phoneNumber}).then(() => {
-        this.phoneNumber = '';
-      });
-    }
-  }
 
   protected readonly Object = Object;
 }

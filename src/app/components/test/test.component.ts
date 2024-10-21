@@ -157,6 +157,8 @@ export class TestComponent implements OnInit, OnDestroy {
       this.saveFormToLs();
       this.isNoLawsSelected = true;
       return;
+    } else {
+      this.isNoLawsSelected = false
     }
 
     if (this.userTestBalance < this.totalExamPrice) {

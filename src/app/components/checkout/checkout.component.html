@@ -4,10 +4,14 @@
     <h2 class="checkout__title text-center">
       {{ 'CHECKOUT.TITLE' | translate }}
     </h2>
+    <p class="text-center text-white">{{ 'CHECKOUT.DESCRIPTION' | translate }}</p>
+    <p class="text-center text-white">{{ 'CHECKOUT.DESCRIPTION2' | translate }}</p>
+    <p class="text-center text-white fw-bold">{{ 'CHECKOUT.PAYMENT_LABEL' | translate }}</p>
 
-    <div class="dropdown flex-grow-1 d-flex justify-content-center align-items-center">
+    <div class="dropdown flex-grow-1 d-flex justify-content-center align-items-center flex-column">
       <button class="btn btn-primary blink-button dropdown-toggle w-50 mb-3 mb-md-0"
               [class.btn-danger]="noBlockSelectedError"
+              [class.selected-block]="selectedBlock"
               type="button" id="dropdownMenuButton1"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -21,24 +25,10 @@
           </li>
         }
       </ul>
-    </div>
-
-    <div class="row justify-content-center align-items-center flex-column flex-md-row row-gap-3 flex-grow-1">
-      @for (item of checkoutItems; track item.id) {
-        <div class="col-12 col-md-3">
-          <div class="checkout__item" (click)="onSelectCard(item.id)">
-            <p class="m-0">
-              {{ 'CHECKOUT.BUY' | translate }}
-            </p>
-            <h3>
-              {{ item.price }} тг.
-            </h3>
-            <button class="btn btn-light">
-              {{ 'CHECKOUT.SELECT' | translate }}
-            </button>
-          </div>
-        </div>
-      }
+      <div class="mt-4 d-flex">
+        <input type="number" class="form-control" [formControl]="amount" [defaultValue]="1">
+        <button class="btn btn-primary ms-2" (click)="checkout()" [disabled]="!selectedBlock">{{ 'CHECKOUT.BUY' | translate }}</button>
+      </div>
     </div>
   </div>
 </div>

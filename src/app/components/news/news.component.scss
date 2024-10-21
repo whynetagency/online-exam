@@ -2,7 +2,7 @@
   min-height: calc(100vh - 56px);
   background: url("/assets/images/home-bg.png") no-repeat;
   background-position: center top;
-  background-size: 101% 50%;
+  background-size: 101% 66%;
 
   &__title {
     color: #ffffff;
@@ -78,7 +78,7 @@
 
   .section {
     &__text, &__sub-title {
-      //text-align: center;
+      text-align: center;
     }
   }
 
@@ -97,31 +97,8 @@
   }
 }
 
-.section__title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-.section__subtitle {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 15px;
-  margin-bottom: 5px;
-}
-.section__text {
-  font-size: 16px;
-  margin-bottom: 15px;
-}
-@media screen and (min-width: 768px) and (max-width: 1150px) {
+@media screen and (max-width: 768px) {
   .home {
-    background-size: 101% 43%;
-  }
-}
-
-@media screen and (max-width: 767px) {
-  .home {
-    background-size: 101% 50%;
     &__title {
       width: 100%;
     }

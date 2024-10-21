@@ -5,7 +5,6 @@ import {Directive, HostListener, OnInit, Renderer2} from '@angular/core';
   standalone: true
 })
 export class DisableContextDirective implements OnInit {
-
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     if (event.keyCode === 123 || (event.ctrlKey && event.shiftKey && event.keyCode === 73) ||
@@ -19,7 +18,7 @@ export class DisableContextDirective implements OnInit {
   constructor(private renderer: Renderer2) { }
 
   ngOnInit() {
-    this.disableContext();
+    // this.disableContext();
   }
 
   disableContext() {

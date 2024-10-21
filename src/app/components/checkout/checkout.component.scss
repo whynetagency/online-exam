@@ -3,6 +3,10 @@
   background: url("/assets/images/home-bg.png") no-repeat center/101%;
   padding: 2.5rem 0;
 
+  .btn-danger {
+    animation: pulse 1s infinite;
+  }
+
   &__title {
     color: var(--light-text);
   }
@@ -35,6 +39,11 @@
     cursor: pointer;
   }
 
+  button.selected-block {
+    background-color: #0B58CA;
+    animation: none;
+  }
+
   button.dropdown-toggle{
     // background: #bb0000 !important;
     border: red !important;
@@ -42,6 +51,7 @@
     font-weight: 600;
     padding: 12px;
   }
+
   .blink-button {
     padding: 10px 20px;
     font-size: 16px;
@@ -50,7 +60,7 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    animation: blinkBackground 1s infinite;
+    animation: pulse 1s infinite;
   }
 
   @keyframes blinkBackground {
@@ -85,3 +95,19 @@
     }
   }
 }
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  }
+}
+

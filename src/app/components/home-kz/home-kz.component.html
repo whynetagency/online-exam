@@ -1,0 +1,113 @@
+<section class="home">
+  <div class="container">
+    <h2 class="home__title text-center mb-5">
+      {{ 'HOME.TITLE' | translate }}
+    </h2>
+
+    <div class="row justify-content-center row-gap-4 mb-5">
+      @for (block of blocks; track block.id; let i = $index) {
+        <div class="col-6 col-md-2">
+          <div class="blocks__item" (click)="onBlockSelect(block.id)">
+            <div class="image"
+                 [style.background-image]="'url(assets/images/blocks/'+ block.id + '-' + languageService.lg +'.png)'"
+            >
+              <img src="../../../assets/images/placeholders/placeholder.svg" alt="placeholder">
+            </div>
+            <p>
+              {{ block.title | translate }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="row justify-content-center mb-5">
+      <div class="col-11 col-md-10">
+        <div class="benefits">
+          <div class="row gap-5 gap-md-0">
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/goblet.png" alt="goblet">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_1' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_1' | translate }}
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/schedule.png" alt="schedule">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_2' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_2' | translate }}
+                </p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="d-flex flex-column h-100">
+                <h4 class="text-center mb-3">
+                  <img class="me-2" src="assets/icons/ux.png" alt="ux">
+                  {{ 'HOME.BENEFITS.BEST_TITLE_3' | translate }}
+                </h4>
+                <p class="m-0 text-center">
+                  {{ 'HOME.BENEFITS.BEST_TEXT_3' | translate }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="about" class="row">
+      <div class="col-12">
+        <p class="section__title">Online-exam.kz сайты (мемлекеттік тест, гостест)</p>
+        <p class="section__text">Біз Қазақстан Республикасының мемлекеттік қызметіне кіру, лицензия немесе сертификат алу үшін тестілеуге кешенді дайындық жүргізуді ұсынамыз. Біздің әдістемелік кешен нақты тестілеуге барынша жақын жағдайда ҚР заңнамасы бойынша сынақ тестілеуден өтуге мүмкіндік береді. Тест тапсырмалары заңдар бойынша қатаң тәртіпте жасалады және олар ресми тестілеудегі сұрақтармен дәл сәйкестікке кепілдік бермесе де, олардың мазмұны сәйкес келуі немесе ұқсас болуы мүмкін, себебі заң біртұтас және заң баптары бір мағыналық жүктемені көтереді.</p>
+
+        <p class="section__title">БАСЫМДЫҚТАРЫ:</p>
+        <ul class="advantages">
+          <li>
+            <p class="section__subtitle">2024 жыл бойынша өзекті ақпарат:</p>
+            <p class="section__text">Ең өзекті онлайн тест сұраөтары, біз оларды ұдайы түрде жаңартып отырамыз. Сіздер ең жаңа ақпаратқа қолжеткізе аласыздар.</p>
+          </li>
+          <li>
+            <p class="section__subtitle">Нарық көшбасшысы:</p>
+            <p class="section__text">Біз тестілеуге дайындау бойынша сайттар арасында ТОП-2 кіреміз.</p>
+          </li>
+          <li>
+            <p class="section__subtitle">Жауаптары бар/жоқ тестілеу тапсырмалары:</p>
+            <p class="section__text">Сізге ыңғайлы болу үшін сайтта әртүрлі режимде жаттығуға мүмкіндік беретін жауаптары бар және жауаптары жоқ сұрақтар берілген.</p>
+          </li>
+          <li>
+            <p class="section__subtitle">Жоғары нәтижеге қолжеткізу:</p>
+            <p class="section__text">Более 2 500-ден үздік нәтижеге қол жеткізген астам клиенттер.</p>
+          </li>
+          <li>
+            <p class="section__subtitle">Оқу жылдамдығы:</p>
+            <p class="section__text">Сіз дайындық уақытын бірнеше есе үнемдейсіз.</p>
+          </li>
+          <li>
+            <p class="section__subtitle">Оқытудың икемділігі:</p>
+            <p class="section__text">Барлық материалдар екі тілде қол жетімді.</p>
+          </li>
+        </ul>
+
+        <p class="section__title">БІЗДІҢ ЖОБАНЫҢ МАҚСАТЫ:</p>
+        <ul class="advantages">
+          <li>
+            <p class="section__text">Жұмысқа орналасу, лицензия немесе сертификат алу үшін тестілеуді тапсыратын үміткерлерге заңдарды зерделеу және оларды сынақ тестілеумен бекіту арқылы әдістемелік көмек көрсету;</p>
+          </li>
+          <li>
+            <p class="section__text">Өзекті заңдарға негізделген тестілеуге дайындықтың қолжетімді және қызықты нысанын қамтамасыз ету.</p>
+          </li>
+        </ul>
+        <p class="section__sub-title"><strong>P.S.</strong>Біздің сайт Сізге тестілеуге дайындалудың пайдалы құралы болады және Сіздің мақсатыңызға жетуге көмектеседі деп үміттенеміз!</p>
+      </div>
+    </div>
+  </div>
+</section>

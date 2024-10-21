@@ -9,6 +9,9 @@
           <button class="mode-switcher__btn"
                   [ngClass]="{'active': activeMode === 'documents'}"
                   (click)="onChangeMode('documents')">Документы</button>
+          <button class="mode-switcher__btn"
+                  [ngClass]="{'active': activeMode === 'laws'}"
+                  (click)="onChangeMode('laws')">Законы</button>
         </div>
       </div>
     </div>
@@ -27,26 +30,45 @@
           <div class="accordion" id="accordion">
             <div class="accordion-item">
               <h2 class="accordion-header" id="heading">
-                <button class="accordion-button collapsed d-flex justify-content-between gap-3" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#' + user.uid" aria-expanded="false" [attr.aria-controls]="user.uid">
-                  <div class="flex-grow-1">UID: {{ user.uid }}</div>
-                  <div class="flex-grow-1">Емейл: {{ user.email }}</div>
-                  <div class="flex-grow-1">Имя: {{ user.name }}</div>
-                  <div class="flex-grow-1">Дата регистраци: {{ user.createdAt | toDateFormat }}</div>
+                <button
+                  class="accordion-button collapsed w-100 p-0"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#' + user.uid"
+                  aria-expanded="false"
+                  [attr.aria-controls]="user.uid"
+                >
+                  <div class="container-fluid">
+                    <div class="row align-items-center text-left py-2">
+                      <div class="col-4 d-flex justify-content-start">
+                        <strong>UID:</strong> <span class="ms-1">{{ user.uid }}</span>
+                      </div>
+                      <div class="col-4 d-flex justify-content-start">
+                        <strong>Емейл:</strong> <span class="ms-1">{{ user.email }}</span>
+                      </div>
+                      <div class="col-2 d-flex justify-content-start">
+                        <strong>Имя:</strong> <span class="ms-1">{{ user.name }}</span>
+                      </div>
+                      <div class="col-2 d-flex justify-content-start">
+                        <strong>Дата регистрации:</strong> <span class="ms-1">{{ user.createdAt | toDateFormat }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </button>
               </h2>
               <div id="{{user.uid}}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
                   <div class="row">
                     <div class="col-4"></div>
-                    <div class="col-4 d-flex justify-content-center">Баланс</div>
-                    <div class="col-4 d-flex justify-content-center">Действительны до</div>
+                    <div class="col-2 d-flex justify-content-center">Баланс</div>
+                    <div class="col-3 d-flex justify-content-center">Действительны до</div>
                   </div>
                   @for (block of blocks; track block.id) {
-                    <div class="row">
+                    <div class="row mt-2 align-items-center">
                       <div class="col-4">
                         {{ block.title | translate }}
                       </div>
-                      <div class="col-4">
+                      <div class="col-2">
                         <div class="d-flex justify-content-center">
                           @if (user.balances[block.id]?.amount) {
                             {{ user.balances[block.id].amount }} тг.
@@ -55,17 +77,37 @@
                           }
                         </div>
                       </div>
-                      <div class="col-4">
+                      <div class="col-3">
                         <div class="d-flex justify-content-center">
                           @if (user.balances[block.id]?.expirationDate) {
-                            {{ user.balances[block.id].expirationDate | toDateFormat }}
+                            {{ user.balances[block.id].expirationDate.seconds * 1000 | toDateFormat }}
                           } @else {
                             ---
                           }
                         </div>
                       </div>
+                      <div class="col-3">
+                        <div class="d-flex justify-content-center gap-2">
+                          <button type="button" class="btn btn-primary" (click)="proceedAccess(block.id, user.uid)">
+                            Продлить период
+                          </button>
+                          <button type="button" class="btn btn-primary" (click)="onSuspendAccess(user, block.id)">
+                            Остановить доступ
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   }
+                  <div class="row mt-3">
+                    <div class="col-12 d-flex justify-content-center gap-2">
+                      <button type="button" class="btn btn-primary" (click)="openBalanceModal(user, balanceModal)">
+                        Изменить баланс
+                      </button>
+                      <button type="button" class="btn btn-danger" (click)="onDeleteUser(user.uid)">
+                        Удалить пользователя
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -97,7 +139,7 @@
                  type="file" (change)="onFileChanged($event)"
                  #fileInput>
 
-          <div *ngIf="lessonResult.length" class="json-viewer">
+          <div *ngIf="lessonResult?.length" class="json-viewer">
             <ngx-json-viewer [json]="lessonResult[0]" [expanded]="false"></ngx-json-viewer>
           </div>
 
@@ -105,7 +147,7 @@
             <button class="btn btn-primary"
                     (click)="fileInput.click()">Выбрать файл
             </button>
-            <ng-container *ngIf="lessonResult.length">
+            <ng-container *ngIf="lessonResult?.length">
               <button class="btn btn-danger" (click)="onRemoveFile()">Удалить Файл</button>
               <button class="btn btn-secondary" (click)="onUpload('tests')">Загрузить тест в FireBase</button>
               <button class="btn btn-secondary" (click)="onUpload('laws')">Загрузить закон в FireBase</button>
@@ -115,6 +157,47 @@
         </div>
       </div>
     }
+
+    @if (activeMode === 'laws') {
+      <div *ngFor="let lawGroup of groupedLaws" class="law-block">
+        <h4>Блок {{ lawsBlockTitleMap.get(lawGroup.blockId) }}</h4>
+        <div class="law-item-group d-flex align-items-center flex-column">
+          <div *ngFor="let law of lawGroup.items" class="law-item mx-2 w-100 d-flex justify-content-between mt-2">
+            <span>{{ law.title }} ({{ law.id }})</span>
+            <button (click)="deleteLaw(law.id)" class="btn btn-danger">
+              Удалить
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 </div>
 
+
+<ng-template #balanceModal>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Изменить баланс для {{ selectedUser?.name }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modalRef?.hide()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="balanceForm">
+          <div class="mb-3">
+            <label for="blockSelect" class="form-label">Виберите блок</label>
+            <select formControlName="blockId" class="form-select">
+              <option *ngFor="let block of blocks" [value]="block.id">{{ block.title | translate }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="balanceInput" class="form-label">Новый баланс</label>
+            <input type="number" formControlName="balance" class="form-control" id="balanceInput" min="0" placeholder="Введите баланс">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modalRef?.hide()">Закрыть</button>
+        <button type="button" class="btn btn-primary" (click)="addBalance(selectedUser.uid, balanceForm.controls['blockId'].value)">Сохранить</button>
+      </div>
+    </div>
+</ng-template>

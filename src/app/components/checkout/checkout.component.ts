@@ -2,27 +2,27 @@ import {Component, OnInit} from '@angular/core';
 import {DatabaseService} from "../../shared/services/database.service";
 import {LoaderService} from "../../shared/services/loader.service";
 import {IBlockItem} from "../../shared/models/exam.model";
-import {TranslateModule} from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import {UserService} from "../../shared/services/user.service";
 import dayjs from 'dayjs';
 import {Router} from "@angular/router";
 import {first} from "rxjs";
-
+import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [
-    TranslateModule
+    TranslateModule,
+    ReactiveFormsModule
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss'
 })
 export class CheckoutComponent implements OnInit {
-
-  checkoutItems: any[] = [];
   blocks: IBlockItem[] = [];
 
   selectedBlock?: IBlockItem;
+  amount!: FormControl;
 
   selectedCheckoutItemId = '';
   noBlockSelectedError = false;
@@ -31,15 +31,14 @@ export class CheckoutComponent implements OnInit {
       private databaseService: DatabaseService,
       private loaderService: LoaderService,
       private userService: UserService,
-      private router: Router
+      private router: Router,
+      private translate: TranslateService,
   ) {
   }
 
   async ngOnInit() {
     this.userService.getUserData();
     this.databaseService.getBlocks();
-
-    this.checkoutItems = (await this.databaseService.getCheckoutItems() as any[]).sort((a, b) => a.price - b.price);
 
     this.databaseService.blocks.subscribe(blocks => {
       this.blocks = blocks.sort((a, b) => a.order - b.order);
@@ -49,6 +48,8 @@ export class CheckoutComponent implements OnInit {
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
+    //TODO: after Test set min to 1000
+    this.amount = new FormControl(1, [Validators.required, Validators.min(1)]);
   }
 
   onSelectBlock(block: IBlockItem) {
@@ -56,42 +57,50 @@ export class CheckoutComponent implements OnInit {
     this.noBlockSelectedError = false;
   }
 
-  onSelectCard(id: string) {
-    this.userService.user$.pipe(first()).subscribe(u => {
-      if (u) {
-        if (this.selectedBlock) {
-          this.selectedCheckoutItemId = id; //TODO: this will be get from afterpayment queryParams, remove in future
-          localStorage.setItem('selectedProgram', this.selectedBlock!.id);
-
-          this.onCheckoutSuccess();
-        } else {
-          this.noBlockSelectedError = true;
+  checkout(): void {
+    if (!this.userService.user$.value) {
+      this.router.navigate(['/login']).then();
+      return;
+    }
+      let widget = new (window as any).tiptop.Widget();
+      widget.pay('charge',
+        {
+          publicId: 'pk_33854c56351078e1f6228901bfd9d', //TODO: id из личного кабинета  pk_33854c56351078e1f6228901bfd9d
+          description: `Пополнение баланса на сайте online-exam.com, для программы ${this.translate.instant(this.selectedBlock!.title.toString())}`,
+          amount: this.amount.value,
+          currency: 'KZT',
+          accountId: `${this.userService.auth.currentUser?.uid}`, //идентификатор плательщика (необязательно)
+          email: `${this.userService.auth.currentUser?.email}`, //email плательщика (необязательно)
+          skin: "mini",
+          autoClose: 3,
+        },
+        {
+          onSuccess: () => {
+            this.onCheckoutSuccess()
+          },
+          onFail: function () { // fail
+            //действие при неуспешной оплате
+          },
         }
-      } else {
-        this.router.navigate(['/login']).then();
-      }
-    })
-
-  }
+      )
+    };
 
   onCheckoutSuccess() {
     this.loaderService.loading$.next(true);
-    const amount = this.checkoutItems.find(item => item.id === this.selectedCheckoutItemId).price;
-    const blockId = localStorage.getItem('selectedProgram');
+    const amount = this.amount.value;
+    const blockId = this.selectedBlock?.id;
 
-   if (blockId) {
-     this.userService.user$.pipe(first()).subscribe(async u => {
-       // @ts-ignore
-       (u)!.balances[blockId].amount += amount;
-       // @ts-ignore
-       (u)!.balances[blockId].expirationDate = this.getExpirationDate();
+    if (blockId) {
+      this.userService.user$.pipe(first()).subscribe(async u => {
+        (u)!.balances[blockId].amount += amount;
+        (u)!.balances[blockId].expirationDate = this.getExpirationDate();
 
-       await this.userService.updateUserData('balances', u!.balances);
-       this.router.navigate([`test/${blockId}`]).then(() => {
-         localStorage.removeItem('selectedProgram');
-       });
-     })
-   }
+        await this.userService.updateUserData('balances', u!.balances);
+        this.router.navigate([`test/${blockId}`]).then(() => {
+          localStorage.removeItem('selectedProgram');
+        });
+      })
+     }
   }
 
   getExpirationDate(): any {
