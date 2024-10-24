@@ -1,4 +1,4 @@
-<div class="contacts">
+<div class="contacts" xmlns="http://www.w3.org/1999/html">
   <div class="container container-xxl h-100 d-flex flex-column">
     <h2 class="contacts__title text-center">
       {{ 'CONTACTS.TITLE' | translate }}
@@ -6,16 +6,53 @@
     <h5 class="contacts__title text-center">
       {{ 'CONTACTS.SUB_TITLE' | translate }}
     </h5>
-
-    <div class="row justify-content-center align-items-center flex-grow-1 flex-wrap">
-      @for (item of contacts; track item.id) {
-        <div class="col-4 col-md-3">
-          <a class="contacts__item" href="{{ item.url }}" target="_blank">
-            <i class="bi bi-{{item.name.replace('-', '').toLowerCase()}}"></i>
-            {{ item.name }}
-          </a>
-        </div>
-      }
+    <div>
+      <div class="row justify-content-center align-items-center flex-grow-1 flex-wrap">
+        @for (item of contacts; track item.id) {
+          <div class="col-4 col-md-3">
+            <a class="contacts__item" href="{{ item.url }}" target="_blank">
+              <i class="bi bi-{{item.name.replace('-', '').toLowerCase()}}"></i>
+              {{ item.name }}
+            </a>
+          </div>
+        }
+      </div>
+      <div class="w-100 d-flex justify-content-center mt-4">
+      <button class="btn btn-primary" (click)="openModal(formModal)">{{ 'CONTACTS.CONTACT_US' | translate }}</button>
+      </div>
     </div>
   </div>
 </div>
+
+<ng-template #formModal>
+  @if (!isSuccess) {
+    <div class="modal-header">
+      <h4 class="modal-title pull-left">{{ 'CONTACTS.FEEDBACK' | translate }}</h4>
+      <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="contactUsForm">
+        <label>{{ 'LOGIN.NAME' | translate }}</label>
+        <input
+          formControlName="Name"
+          class="form-control"
+        >
+        <label class="mt-2">{{ 'LOGIN.EMAIL' | translate }}</label>
+        <input type="email" class="form-control" formControlName="Email">
+        <label class="mt-2">{{ 'CONTACTS.MESSAGE' | translate }}</label>
+        <textarea name="message" class="form-control" formControlName="Message"></textarea>
+        <div class="buttons mt-2 d-flex justify-content-end">
+          <button class="btn btn-danger" (click)="modalRef?.hide()">{{ 'TEST.DECLINE' | translate }}</button>
+            <button class="btn btn-primary ms-2" (click)="sendEmail()">Отправить</button>
+          </div>
+        </form>
+    </div>
+      } @else {
+        <div class="modal-body text-center">
+          <i class="bi bi-check-circle text-success text-center" style="font-size: 48px;"></i>
+          <h2>{{ successMessageText }}</h2>
+        </div>
+      }
+</ng-template>

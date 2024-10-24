@@ -18,6 +18,11 @@
                 {{ 'LOGIN.EMAIL_CORRECT' | translate }}
               </div>
             }
+            @if (emailAlreadyUsed && showErrors) {
+              <div class="invalid-feedback">
+                {{ 'LOGIN.USED_EMAIL' | translate }}
+              </div>
+            }
           </div>
           <div class="mb-4 position-relative">
             <label for="password" class="form-label">
@@ -52,14 +57,9 @@
                 @if (registerForm.get('password')!.errors!['required']) {
                   {{ 'LOGIN.PASSWORD_REQ' | translate }}
                 }
-                @if (registerForm.get('password')!.errors!['minlength']) {
+                @if (registerForm.get('password')!.errors!['minlength'] || passwordLengthError) {
                   {{ 'LOGIN.PASSWORD_LENGTH' | translate }}
                 }
-              </div>
-            }
-            @if (isPasswordIncorrect && showErrors) {
-              <div class="invalid-feedback">
-                {{ 'LOGIN.PASSWORD_WRONG' | translate }}
               </div>
             }
           </div>

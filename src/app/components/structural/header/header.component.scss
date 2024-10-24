@@ -1,3 +1,15 @@
+.navbar {
+  background-color: #E1DBD4 !important;
+
+  .about_item {
+    cursor: pointer;
+  }
+
+  .nav-link {
+    color: #000;
+  }
+}
+
 .language-switcher {
   background: var(--dark-color);
   border: solid 1px var(--dark-color);

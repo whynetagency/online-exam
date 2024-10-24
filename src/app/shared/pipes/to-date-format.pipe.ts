@@ -9,7 +9,7 @@ import {DatePipe} from "@angular/common";
 export class ToDateFormatPipe implements PipeTransform {
 
   transform(value: any, type?: string): string | null {
-    const timestamp = value.seconds * 1000;
+    const timestamp = (value.seconds ?? value);
     const formattedDate = new Date(timestamp);
 
     const datePipe = new DatePipe('en-US');

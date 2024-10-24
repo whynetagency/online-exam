@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import {getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged} from "firebase/auth";
 import {ISignInData, ISignUpData, IUser} from "../models/user.model";
-import {BehaviorSubject, first, take} from "rxjs";
-import {collection, doc, Firestore, getDoc, setDoc, updateDoc} from "@angular/fire/firestore";
-import {createUserWithEmailAndPassword} from "@angular/fire/auth";
+import {BehaviorSubject, first} from "rxjs";
+import { collection, doc, Firestore, getDoc, getDocs, query, setDoc, updateDoc, where } from "@angular/fire/firestore";
+import {
+  createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
+  sendPasswordResetEmail,
+  user
+} from "@angular/fire/auth";
 import dayjs from "dayjs";
-import {LoaderService} from "./loader.service";
-import {sendPasswordResetEmail} from "@firebase/auth";
+import { error } from "@angular/compiler-cli/src/transformers/util";
 
 @Injectable({
   providedIn: 'root'
@@ -133,9 +137,9 @@ export class UserService {
     }
   }
 
-  async updateUserData(field: string, data: any): Promise<void> {
+  async updateUserData(field: string, data: any, uid?: string): Promise<void> {
     const usersCollection = collection(this.fs, 'users');
-    const userDoc = doc(usersCollection, this.user$.getValue()?.uid);
+    const userDoc = doc(usersCollection, uid ?? this.user$.getValue()?.uid);
 
     try {
       const updatedUserData = this.user$.getValue();
@@ -177,5 +181,21 @@ export class UserService {
         })
       }
     })
+  }
+
+  passwordReset(email: string) {
+    try {
+      return sendPasswordResetEmail(this.auth, email);
+    } catch (error) {
+      console.error('Error sign in:', error);
+      throw error;
+    }
+  }
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    const q = query(this.usersCollection, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    return !querySnapshot.empty;
   }
 }

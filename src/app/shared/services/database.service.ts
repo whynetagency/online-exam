@@ -9,9 +9,10 @@ import {
   query,
   QueryConstraint
 } from "@angular/fire/firestore";
-import {BehaviorSubject} from "rxjs";
+import { BehaviorSubject, map, Observable, tap } from "rxjs";
 import {IBlockItem, ILaw, ITest} from "../models/exam.model";
 import {IUser} from "../models/user.model";
+import { log } from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,8 @@ export class DatabaseService {
 
   blocks: BehaviorSubject<IBlockItem[]> = new BehaviorSubject<IBlockItem[]>([]);
   users$: BehaviorSubject<IUser[]> = new BehaviorSubject<IUser[]>([]);
+  laws$: BehaviorSubject<ILaw[]> = new BehaviorSubject<ILaw[]>([]);
+  tests$: BehaviorSubject<ITest[]> = new BehaviorSubject<ITest[]>([]);
 
   constructor(private fs: Firestore) {}
 
@@ -150,6 +153,18 @@ export class DatabaseService {
       console.error('Error fetching contacts:', error);
       throw error;
     }
+  }
+
+  getAllLaws(): void{
+    collectionData(this.lawsCollection, { idField: 'id' }).pipe(
+      tap(lawsData => this.laws$.next(lawsData as ILaw[])),
+    ).subscribe();
+  }
+
+  getAllTest(): void{
+    collectionData(this.testsCollection, { idField: 'id' }).pipe(
+      tap(testsData => this.tests$.next(testsData as ITest[])),
+    ).subscribe();
   }
 
   getAllUsers() {

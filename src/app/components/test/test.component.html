@@ -50,7 +50,7 @@
                 </div>
                 @if (userTestExpirationDate) {
                   <p class="opacity-50">
-                    {{ 'TEST.VALID_TILL' | translate }}  {{ userTestExpirationDate | toDateFormat }}
+                    {{ 'TEST.VALID_TILL' | translate }}  {{ +userTestExpirationDate.seconds * 1000 | toDateFormat }}
                   </p>
                 }
               </div>
@@ -58,9 +58,9 @@
           </h5>
 
           <div class="form-check form-switch">
-            <input (change)="onSwitchTestMode($event)" class="form-check-input" type="checkbox" role="switch"
+            <input (change)="onSwitchTestMode($event)" class="form-check-input me-2" type="checkbox" role="switch"
                    id="switchMode">
-            <label class="form-check-label" for="switchMode">{{ 'TEST.ANSWERS_SHOW' | translate }}</label>
+            <label class="form-check-label switch-btn-label" for="switchMode">{{ 'TEST.ANSWERS_SHOW' | translate }}</label>
           </div>
 
           <p class="my-3">
@@ -99,6 +99,7 @@
           <div class="invalid-feedback mt-3">
             @if (isNoLawsSelected) {
               {{ 'TEST.NO_LAWS' | translate }}
+              <br>
             }
             @if (isNoMoneyError) {
               {{ 'TEST.NO_MONEY' | translate }}
