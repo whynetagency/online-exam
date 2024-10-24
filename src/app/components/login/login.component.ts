@@ -6,6 +6,7 @@ import {UserService} from "../../shared/services/user.service";
 import {TranslateModule} from "@ngx-translate/core";
 import {Subject, takeUntil} from "rxjs";
 import { LanguageService } from "../../shared/services/language.service";
+import { deleteUser, reauthenticateWithPopup } from "@angular/fire/auth";
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   resetEmail: FormControl = new FormControl('', Validators.required);
   resetEmailMessage!: string;
   isResetError = false;
+  resetEmailMessageError!: string;
 
   destroy$ = new Subject();
 
@@ -74,16 +76,22 @@ export class LoginComponent implements OnInit, OnDestroy {
         });
   }
 
-  signIn() {
+  async signIn(): Promise<void> {
     if (!this.signInForm.valid) {
       this.showErrors = true;
+      return;
+    }
+
+    const emailExist = await this.userService.checkEmailExists(this.signInForm.controls['email'].value);
+    if (!emailExist) {
+      this.showErrors = true
       return;
     }
 
     this.loaderService.loading$.next(true);
 
     this.userService.signIn(this.signInForm.value).then(() => {
-      this.router.navigate(['/']).then();
+      this.router.navigate(['/home']);
     }).catch((error) => {
       if (error.code === 'auth/invalid-credential') {
         this.isPasswordIncorrect = true;
@@ -92,8 +100,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     })
   }
 
-  resetPassword() {
+  async resetPassword(): Promise<void> {
     this.isResetError = false;
+    const emailExist = await this.userService.checkEmailExists(this.resetEmail.value);
+    if (!emailExist) {
+      this.isResetError = true;
+      this.languageService.getCurrentLanguageAsObservable().pipe().subscribe(value => value === 'ru'?
+        this.resetEmailMessageError = 'Пользователь с таким адресом не найден' :
+        this.resetEmailMessageError = 'Бұл мекенжайы бар пайдаланушы табылмады'
+      );
+      console.log('exist')
+      return
+    }
     this.userService.passwordReset(this.resetEmail.value).then(() => {
       this.languageService.getCurrentLanguageAsObservable().pipe().subscribe(value => value === 'ru' ?
       this.resetEmailMessage = `На адрес ${this.resetEmail.value} было отправлено письмо с инструкциями по сбросу пароля.` :

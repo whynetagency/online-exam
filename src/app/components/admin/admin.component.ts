@@ -2,12 +2,12 @@ import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewE
 import {INavigationItem} from "../../shared/models/structures.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import { DatePipe, NgClass, NgForOf, NgIf } from "@angular/common";
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import {LoaderService} from "../../shared/services/loader.service";
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {UserService} from "../../shared/services/user.service";
 import {DatabaseService} from "../../shared/services/database.service";
-import { combineLatest, filter, map, Subject, takeUntil } from "rxjs";
+import { combineLatest, filter, first, map, Subject, take, takeLast, takeUntil } from "rxjs";
 import {IUser} from "../../shared/models/user.model";
 import {ToDateFormatPipe} from "../../shared/pipes/to-date-format.pipe";
 import { IBlockItem, ILaw, ITest } from "../../shared/models/exam.model";
@@ -16,6 +16,7 @@ import {NgxPaginationModule} from "ngx-pagination";
 import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
 import dayjs from "dayjs";
 import { BsModalRef, BsModalService, ModalModule } from "ngx-bootstrap/modal";
+import { log } from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
 
 @Component({
   selector: 'app-admin',
@@ -48,13 +49,25 @@ export class AdminComponent implements OnInit, OnDestroy {
   users: IUser[] = [];
   blocks: IBlockItem[] = [];
   laws: ILaw[] = [];
+  tests: ITest[] = [];
   groupedLaws: any[] = [];
   lessonResult: any = [];
+  selectedBlock!: ITest;
+  isLoading = false;
   p1 = 1;
   p2 = 1;
   p3 = 1;
 
-  activeMode: 'users' | 'documents' | 'laws' = 'users';
+  testForm = new FormGroup({
+    title: new FormControl('', Validators.required),
+    titleKz: new FormControl('', Validators.required),
+    topics: new FormArray([]),  // Масив тем
+    pricePerTest: new FormControl(0, Validators.required),
+    pricePerTestHigh: new FormControl(0, Validators.required)
+  });
+
+
+  activeMode: 'users' | 'documents' | 'laws' | 'tests' = 'tests';
 
   navigation: INavigationItem[] = [
     { title: 'Пользователи', view: 'users', img: 'settings', isVisible: true},
@@ -102,19 +115,22 @@ export class AdminComponent implements OnInit, OnDestroy {
     })
     this.databaseService.getBlocks();
     this.databaseService.getAllUsers();
-    this.databaseService.getAllLaws()
+    this.databaseService.getAllLaws();
+    this.databaseService.getAllTest();
 
     combineLatest({
       users: this.databaseService.users$.pipe(),
       blocks: this.databaseService.blocks.pipe(),
       laws: this.databaseService.laws$.pipe(),
+      tests: this.databaseService.tests$.pipe(),
     }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: ({ users, blocks , laws}) => {
+      next: ({ users, blocks , laws, tests}) => {
         this.users = users;
-        this.blocks = blocks.sort((a, b) => a.order - b.order);
+        this.blocks = [...blocks.sort((a, b) => a.order - b.order)];
         this.blocks.pop(); // remove PDD block
         this.laws = laws;
         this.groupLawsByBlock();
+        this.tests = tests;
       },
       error: (err) => console.error('Error loading data:', err),
       complete: () => this.loaderService.loading$.next(false),
@@ -129,7 +145,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onChangeMode(mode: 'users' | 'documents' | 'laws'): void {
+  onChangeMode(mode: 'users' | 'documents' | 'laws' | 'tests'): void {
     this.loaderService.loading$.next(true);
     this.activeMode = mode;
     setTimeout(() => {
@@ -148,13 +164,20 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.modalRef = this.modalService.show(content);
   }
 
+  openAddLawModal(content: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(content);
+  }
+
   deleteLaw(id: string): void {
     this.afs
       .collection('laws')
       .doc(id)
       .delete()
-      .then(() => alert('Закон успішно видалено!'))
-      .catch((error) => console.error('Помилка при видаленні:', error));
+      .then(() => {
+        alert('Закон успешно удалён!');
+        this.deleteLawFromTopics(id);
+      })
+      .catch((error) => console.error('Ошибка при удалении:', error));
   }
 
   onFileChanged(event: any): void {
@@ -268,13 +291,110 @@ export class AdminComponent implements OnInit, OnDestroy {
     })
   }
 
-  /*onSortUsers(param: string): void {
-    if (param === 'common') {
-      this.users = this.commonUsers;
+  filterLaw(laws: ILaw[]): ILaw[] {
+    return laws.filter(law => !law.id.includes('kz'));
+  }
+
+  deleteLawFromTopics(lawId: string): void {
+    this.afs.collection<ITest>('tests').get().subscribe(snapshot => {
+      const batch = this.afs.firestore.batch();
+
+      snapshot.forEach(doc => {
+        const testData = doc.data();
+        const updatedTopics = testData.topics.filter(topic => topic.id !== lawId);
+
+        if (updatedTopics.length !== testData.topics.length) {
+          const testRef = this.afs.collection('tests').doc(doc.id).ref;
+
+          batch.update(testRef, { topics: updatedTopics });
+        }
+      });
+
+      batch.commit()
+        .then(() => console.log('Topics updated successfully'))
+        .catch(error => console.error('Error with updates topics:', error));
+    });
+  }
+
+  get topics(): FormArray {
+    return this.testForm.get('topics') as FormArray;
+  }
+
+  selectedTest(test: ITest): void {
+    this.selectedBlock = test;
+      this.testForm.patchValue({
+        title: test.title,
+        titleKz: test["title-kz"],
+        pricePerTest: test.pricePerTest,
+        pricePerTestHigh: test.pricePerTestHigh
+      });
+
+      test.topics.forEach(topic => {
+        this.topics.push(new FormGroup({
+          id: new FormControl(topic.id, [Validators.required]),
+          title: new FormControl(topic.title),
+          'title-kz': new FormControl(topic['title-kz']),
+          questionsCount: new FormControl(topic.questionsCount),
+          questions: new FormControl(topic.questions)
+        }));
+      });
+  }
+
+  selectedLawIds: string[] = [];
+  onLawChange(event: any, lawId: string): void {
+    if (event.target.checked) {
+      this.selectedLawIds.push(lawId);
     } else {
-      this.users = this.usersSortedByRequest;
+      this.selectedLawIds = this.selectedLawIds.filter(id => id !== lawId);
     }
-  }*/
+  }
+
+  addLawsToTopics(): void {
+    this.selectedLawIds.forEach(lawId => {
+      const matchedLaw = this.laws.filter(law => law.id === lawId);
+      const matchedLawKz = this.laws.filter(law => law.id === `${lawId}-kz`)
+      this.topics.push(
+        new FormGroup({
+          id: new FormControl(lawId, [Validators.required]),
+          title: new FormControl(matchedLaw[0].title, [Validators.required]),
+          'title-kz': new FormControl(matchedLawKz[0].title ?? '', [Validators.required]),
+          questionsCount: new FormControl(matchedLaw[0]?.questionsTotal, [Validators.required]),
+          questions: new FormControl([], [Validators.required])
+        })
+      )
+    });
+
+    this.selectedLawIds = [];
+    this.modalRef?.hide();
+  }
+
+  removeTopic(index: number, lawId: string): void {
+    this.topics.removeAt(index);
+  }
+
+  onUpdateTest() {
+    this.isLoading = true;
+    const testData: Partial<ITest> = {
+      id: this.selectedBlock.id, // залишаємо id при оновленні
+      title: <string>this.testForm.value.title, // дозволяє null
+      'title-kz': <string>this.testForm.value.titleKz, // дозволяє null
+      pricePerTest: +<number>this.testForm.value.pricePerTest, // дозволяє null
+      pricePerTestHigh: <number>this.testForm.value.pricePerTestHigh,
+      topics: this.topics.value // переконайтеся, що topics є масивом
+    };
+
+    if (this.selectedBlock.id) {
+      this.afs
+        .collection('tests')
+        .doc(this.selectedBlock.id)
+        .set(testData)
+        .then(() => {
+          this.uploadSuccess = true;
+          setTimeout(() => this.uploadSuccess = false, 2000);
+        });
+      this.afs.collection<ITest>('tests').doc(this.selectedBlock.id).update(testData).then(() => this.isLoading = false);
+    }
+  }
 
   protected readonly Object = Object;
 }

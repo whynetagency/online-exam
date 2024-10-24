@@ -90,8 +90,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
             phone: this.registerForm.value.phone,
             password: this.registerForm.value.password
         }).then(async () => {
-            this.router.navigate(['/home']).then(async () => {
-            });
+            this.router.navigate(['/home']);
         }).catch(error => {
           this.showErrors = true;
           if (error.code === 'auth/email-already-in-use') {

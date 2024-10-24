@@ -29,6 +29,7 @@ export class DatabaseService {
   blocks: BehaviorSubject<IBlockItem[]> = new BehaviorSubject<IBlockItem[]>([]);
   users$: BehaviorSubject<IUser[]> = new BehaviorSubject<IUser[]>([]);
   laws$: BehaviorSubject<ILaw[]> = new BehaviorSubject<ILaw[]>([]);
+  tests$: BehaviorSubject<ITest[]> = new BehaviorSubject<ITest[]>([]);
 
   constructor(private fs: Firestore) {}
 
@@ -157,6 +158,12 @@ export class DatabaseService {
   getAllLaws(): void{
     collectionData(this.lawsCollection, { idField: 'id' }).pipe(
       tap(lawsData => this.laws$.next(lawsData as ILaw[])),
+    ).subscribe();
+  }
+
+  getAllTest(): void{
+    collectionData(this.testsCollection, { idField: 'id' }).pipe(
+      tap(testsData => this.tests$.next(testsData as ITest[])),
     ).subscribe();
   }
 

@@ -109,7 +109,9 @@
               </div>
             }
             @if (isResetError) {
-              <div class="invalid-feedback">Something went wrong. Please try again</div>
+              @if (resetEmailMessageError) {
+                <div class="invalid-feedback">{{ resetEmailMessageError }}</div>
+              }
             }
             @if (resetEmailMessage) {
               <div class="reset-message text-white">{{resetEmailMessage}}</div>
