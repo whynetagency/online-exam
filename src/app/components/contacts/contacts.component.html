@@ -25,7 +25,7 @@
 </div>
 
 <ng-template #formModal>
-  <form class="contact-form" (submit)="sendEmail()">
+  @if (!isSuccess) {
     <div class="modal-header">
       <h4 class="modal-title pull-left">{{ 'CONTACTS.FEEDBACK' | translate }}</h4>
       <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
@@ -35,7 +35,8 @@
     <div class="modal-body">
       <form [formGroup]="contactUsForm">
         <label>{{ 'LOGIN.NAME' | translate }}</label>
-        <input formControlName="Name"
+        <input
+          formControlName="Name"
           class="form-control"
         >
         <label class="mt-2">{{ 'LOGIN.EMAIL' | translate }}</label>
@@ -44,9 +45,14 @@
         <textarea name="message" class="form-control" formControlName="Message"></textarea>
         <div class="buttons mt-2 d-flex justify-content-end">
           <button class="btn btn-danger" (click)="modalRef?.hide()">{{ 'TEST.DECLINE' | translate }}</button>
-          <button class="btn btn-primary ms-2" (click)="sendEmail()">Отправить</button>
-        </div>
-      </form>
+            <button class="btn btn-primary ms-2" (click)="sendEmail()">Отправить</button>
+          </div>
+        </form>
     </div>
-  </form>
+      } @else {
+        <div class="modal-body text-center">
+          <i class="bi bi-check-circle text-success text-center" style="font-size: 48px;"></i>
+          <h2>{{ successMessageText }}</h2>
+        </div>
+      }
 </ng-template>

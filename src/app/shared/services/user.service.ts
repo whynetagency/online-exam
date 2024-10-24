@@ -2,8 +2,13 @@ import { Injectable } from '@angular/core';
 import {getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged} from "firebase/auth";
 import {ISignInData, ISignUpData, IUser} from "../models/user.model";
 import {BehaviorSubject, first} from "rxjs";
-import {collection, doc, Firestore, getDoc, setDoc, updateDoc} from "@angular/fire/firestore";
-import { createUserWithEmailAndPassword, sendPasswordResetEmail } from "@angular/fire/auth";
+import { collection, doc, Firestore, getDoc, getDocs, query, setDoc, updateDoc, where } from "@angular/fire/firestore";
+import {
+  createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
+  sendPasswordResetEmail,
+  user
+} from "@angular/fire/auth";
 import dayjs from "dayjs";
 import { error } from "@angular/compiler-cli/src/transformers/util";
 
@@ -185,5 +190,12 @@ export class UserService {
       console.error('Error sign in:', error);
       throw error;
     }
+  }
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    const q = query(this.usersCollection, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    return !querySnapshot.empty;
   }
 }

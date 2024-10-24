@@ -9,7 +9,7 @@ export interface IBlockItem {
 }
 
 export interface ITest {
-    id: string;
+    id?: string;
     title: string;
     "title-kz": string;
     pricePerTest: number;
@@ -22,6 +22,7 @@ export interface ILaw {
     'title-kz': string;
     questions: IQuestion[];
     questionsCount: number;
+    questionsTotal?: number;
     isSectionCompleted?: boolean;
 }
 

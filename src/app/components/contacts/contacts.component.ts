@@ -5,6 +5,7 @@ import {TranslateModule} from "@ngx-translate/core";
 import emailjs, { type EmailJSResponseStatus } from '@emailjs/browser';
 import { BsModalRef, BsModalService, ModalModule } from "ngx-bootstrap/modal";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { LanguageService } from "../../shared/services/language.service";
 
 
 @Component({
@@ -23,11 +24,14 @@ export class ContactsComponent implements OnInit {
   modalRef?: BsModalRef;
   contacts: any[] = [];
   contactUsForm!: FormGroup;
+  isSuccess: boolean = false;
+  successMessageText!: string;
 
   constructor(
-      private databaseService: DatabaseService,
-      private loaderService: LoaderService,
-      private modalService: BsModalService,
+    private databaseService: DatabaseService,
+    private loaderService: LoaderService,
+    private modalService: BsModalService,
+    private languageService: LanguageService,
   ) {
   }
 
@@ -35,6 +39,11 @@ export class ContactsComponent implements OnInit {
     this.contacts = await this.databaseService.getContacts() as any[];
 
     this.loaderService.loading$.next(false);
+
+    this.languageService.getCurrentLanguageAsObservable().pipe().subscribe(value => this.successMessageText = value === 'ru'
+      ? 'Ваше сообщение отправлено!'
+      : 'Сіздің хабарламаңыз жіберілді!'
+    )
   }
 
   openModal(template: TemplateRef<void>) {
@@ -47,9 +56,9 @@ export class ContactsComponent implements OnInit {
   }
 
   public sendEmail() {
-
-    emailjs
-      .send('service_tvdph5s', 'template_rp133uj',{
+    emailjs.send(
+      'service_tvdph5s', 'template_rp133uj',
+      {
         "from_name": this.contactUsForm.value.Name,
         "from_email": this.contactUsForm.value.Email,
         "message": this.contactUsForm.value.Message,
@@ -58,13 +67,26 @@ export class ContactsComponent implements OnInit {
       })
       .then(
         () => {
-          console.log('SUCCESS!');
-          this.modalRef?.hide();
-          this.contactUsForm.reset();
+          this.showSuccessMessage();
         },
         (error) => {
           console.log('FAILED...', (error as EmailJSResponseStatus).text);
         },
       );
+  }
+
+  private showSuccessMessage() {
+    this.languageService.getCurrentLanguageAsObservable().pipe().subscribe(value => this.successMessageText = value === 'ru'
+      ? 'Ваше сообщение отправлено!'
+      : 'Сіздің хабарламаңыз жіберілді!'
+    )
+
+    this.isSuccess = true;
+
+    setTimeout(() => {
+      this.contactUsForm.reset();
+      this.modalRef?.hide();
+      this.isSuccess = false;
+    }, 3000);
   }
 }

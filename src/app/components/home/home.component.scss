@@ -62,7 +62,7 @@
   }
 
   .benefits {
-    background: #fff;
+    background: #ede0c9 !important;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     box-shadow: var(--standart-shadow-dark);
@@ -113,6 +113,28 @@
   font-size: 16px;
   margin-bottom: 15px;
 }
+
+.custom-number-list {
+  list-style-type: none;
+  padding-left: 0;
+  font-family: system-ui !important;
+}
+
+.custom-number-list li {
+  counter-increment: list;
+  margin-bottom: 5px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.custom-number-list li::before {
+  content: counter(list) ")";
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+  font-family: system-ui !important;
+}
+
 @media screen and (min-width: 768px) and (max-width: 1150px) {
   .home {
     background-size: 101% 43%;

@@ -9,12 +9,13 @@
     <p class="text-center text-white fw-bold">{{ 'CHECKOUT.PAYMENT_LABEL' | translate }}</p>
 
     <div class="dropdown flex-grow-1 d-flex justify-content-center align-items-center flex-column">
-      <button class="btn btn-primary blink-button dropdown-toggle w-50 mb-3 mb-md-0"
-              [class.btn-danger]="noBlockSelectedError"
-              [class.selected-block]="selectedBlock"
-              type="button" id="dropdownMenuButton1"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+      <button
+        class="btn btn-primary blink-button dropdown-toggle w-50 mb-3 mb-md-0"
+        [class.btn-danger]="noBlockSelectedError"
+        [class.selected-block]="selectedBlock"
+        type="button" id="dropdownMenuButton1"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
       >
         {{ !selectedBlock ? ("CHECKOUT.SELECT_PROGRAM" | translate) : (selectedBlock.title | translate) }}
       </button>
@@ -27,7 +28,7 @@
       </ul>
       <div class="mt-4 d-flex">
         <input type="number" class="form-control" [formControl]="amount" [defaultValue]="1000">
-        <button class="btn btn-primary ms-2" (click)="checkout()" [disabled]="!selectedBlock">{{ 'CHECKOUT.BUY' | translate }}</button>
+        <button class="btn btn-primary ms-2" (click)="checkout()" [disabled]="!selectedBlock || amount.invalid">{{ 'CHECKOUT.BUY' | translate }}</button>
       </div>
     </div>
   </div>
