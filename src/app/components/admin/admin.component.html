@@ -23,13 +23,10 @@
 
       <div class="input-group mb-3 w-25">
         <input type="text" class="form-control" [(ngModel)]="searchField" placeholder="Найти пользователя" aria-label="Recipient's username" aria-describedby="basic-addon2">
-        <div class="input-group-append">
-          <button class="btn btn-outline-secondary" type="button" (click)="onSearchUser()">Найти</button>
-        </div>
       </div>
 
       <div class="row">
-        @for (user of users | paginate: { itemsPerPage: 10, currentPage: p1, id: 'users' }; track user.uid) {
+        @for (user of users | userSearch: searchField | paginate: { itemsPerPage: 10, currentPage: p1, id: 'users' }; track user.uid) {
           <div class="accordion" id="accordion">
             <div class="accordion-item">
               <h2 class="accordion-header" id="heading">
@@ -94,7 +91,7 @@
                           <button type="button" class="btn btn-primary" (click)="proceedAccess(block.id, user.uid)">
                             Продлить период
                           </button>
-                          <button type="button" class="btn btn-primary" (click)="onSuspendAccess(user, block.id)">
+                          <button type="button" class="btn btn-primary" (click)="onSuspendAccess(user.uid, block.id)">
                             Остановить доступ
                           </button>
                         </div>

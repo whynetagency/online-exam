@@ -7,16 +7,15 @@ import {LoaderService} from "../../shared/services/loader.service";
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {UserService} from "../../shared/services/user.service";
 import {DatabaseService} from "../../shared/services/database.service";
-import { combineLatest, filter, first, map, Subject, take, takeLast, takeUntil } from "rxjs";
+import { combineLatest, filter, map, Subject, switchMap, take, takeUntil } from "rxjs";
 import {IUser} from "../../shared/models/user.model";
 import {ToDateFormatPipe} from "../../shared/pipes/to-date-format.pipe";
 import { IBlockItem, ILaw, ITest } from "../../shared/models/exam.model";
 import {TranslateModule} from "@ngx-translate/core";
 import {NgxPaginationModule} from "ngx-pagination";
-import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
+import { UserSearchPipe } from "../../shared/pipes/user-search.pipe";
 import dayjs from "dayjs";
 import { BsModalRef, BsModalService, ModalModule } from "ngx-bootstrap/modal";
-import { log } from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
 
 @Component({
   selector: 'app-admin',
@@ -67,7 +66,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   });
 
 
-  activeMode: 'users' | 'documents' | 'laws' | 'tests' = 'tests';
+  activeMode: 'users' | 'documents' | 'laws' | 'tests' = 'documents';
 
   navigation: INavigationItem[] = [
     { title: 'Пользователи', view: 'users', img: 'settings', isVisible: true},
@@ -119,10 +118,10 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.databaseService.getAllTest();
 
     combineLatest({
-      users: this.databaseService.users$.pipe(),
-      blocks: this.databaseService.blocks.pipe(),
-      laws: this.databaseService.laws$.pipe(),
-      tests: this.databaseService.tests$.pipe(),
+      users: this.databaseService.users$.pipe(takeUntil(this.destroy$)),
+      blocks: this.databaseService.blocks.pipe(takeUntil(this.destroy$)),
+      laws: this.databaseService.laws$.pipe(takeUntil(this.destroy$)),
+      tests: this.databaseService.tests$.pipe(takeUntil(this.destroy$)),
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: ({ users, blocks , laws, tests}) => {
         this.users = users;
@@ -151,11 +150,6 @@ export class AdminComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
-  }
-
-  onSearchUser() {
-    this.users = this.users.filter(user => user.email.toLowerCase().includes(this.searchField.toLowerCase()));
-    this.p1 = 1;
   }
 
   openBalanceModal(user: IUser, content: TemplateRef<any>) {
@@ -201,18 +195,34 @@ export class AdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSuspendAccess(user: IUser, blockId: string): void {
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.balances[blockId].expirationDate = null;
-
-    this.afs
-      .collection('users')
-      .doc(user.uid)
-      .set(temp)
-      .then(() => {
-        alert('Доступ приостановлен');
-      });
+  onSuspendAccess(userId: string, blockId: string): void {
+    this.databaseService.users$.pipe(
+      map(users => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      take(1),
+      switchMap(async (user) => {
+        user!.balances[blockId].expirationDate = null;
+        await this.userService.updateUserData('balances', user!.balances, userId);
+        return this.databaseService.getAllUsers();  // Онови дані після змін
+      })
+    ).subscribe(() => {
+      alert('Доступ приостановлен');
+    });
   }
+
+  proceedAccess(blockId: string, userId: string): void {
+    this.databaseService.users$.pipe(
+      map(users => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      take(1),
+      switchMap(async (user) => {
+        user!.balances[blockId].expirationDate = this.getExpirationDate();
+        await this.userService.updateUserData('balances', user!.balances, userId);
+        return this.databaseService.getAllUsers();  // Онови дані після змін
+      })
+    ).subscribe();
+  }
+
 
   addBalance(userId: string, blockId: string) {
     this.databaseService.users$.pipe(
@@ -226,16 +236,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  proceedAccess(blockId: string, userId: string): void {
-    this.databaseService.users$.pipe(
-      map((users) => users.find(user => user.uid === userId)),
-      filter(user => !!user),
-    ).subscribe(async u => {
-      u!.balances[blockId].expirationDate = this.getExpirationDate();
 
-      await this.userService.updateUserData('balances', u!.balances, userId);
-    });
-  }
 
   getExpirationDate(): any {
     const now = dayjs();
