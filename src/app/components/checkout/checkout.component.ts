@@ -8,7 +8,6 @@ import dayjs from 'dayjs';
 import {Router} from "@angular/router";
 import {first} from "rxjs";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
-import { CheckoutService } from "../../shared/services/checkout.service";
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -34,7 +33,6 @@ export class CheckoutComponent implements OnInit {
       private userService: UserService,
       private router: Router,
       private translate: TranslateService,
-      private checkOutService: CheckoutService,
   ) {
   }
 
@@ -74,10 +72,28 @@ export class CheckoutComponent implements OnInit {
           email: `${this.userService.auth.currentUser?.email}`, //email плательщика (необязательно)
           skin: "mini",
           autoClose: 3,
+          data: {
+            PaymentData: {
+              CustomerReceipt: {
+                Items: [
+                  {
+                    label: this.translate.instant(this.selectedBlock!.title.toString()),
+                    price: this.amount.value,
+                    quantity: 1,
+                    amount: this.amount.value,
+                    vat: null, // Ставка НДС - обязательное поле,
+                  }
+                ],
+                Email: this.userService.auth!.currentUser?.email as string,
+                Amounts: {
+                  Electronic: this.amount.value
+                }
+              }
+            }
+          }
         },
         {
           onSuccess: () => {
-            this.checkOutService.generateCheck(this.amount.value, this.userService.auth!.currentUser?.email as string, this.translate.instant(this.selectedBlock!.title.toString()))
             this.onCheckoutSuccess();
           },
           onFail: function () { // fail
