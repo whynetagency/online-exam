@@ -1,19 +1,21 @@
-import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import {INavigationItem} from "../../shared/models/structures.model";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
-import {NgClass, NgIf} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import { DatePipe, NgClass, NgForOf, NgIf } from "@angular/common";
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import {LoaderService} from "../../shared/services/loader.service";
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {UserService} from "../../shared/services/user.service";
 import {DatabaseService} from "../../shared/services/database.service";
-import {Subject, take, takeUntil} from "rxjs";
+import { combineLatest, filter, map, Subject, switchMap, take, takeUntil } from "rxjs";
 import {IUser} from "../../shared/models/user.model";
 import {ToDateFormatPipe} from "../../shared/pipes/to-date-format.pipe";
-import {IBlockItem} from "../../shared/models/exam.model";
+import { IBlockItem, ILaw, ITest } from "../../shared/models/exam.model";
 import {TranslateModule} from "@ngx-translate/core";
 import {NgxPaginationModule} from "ngx-pagination";
-import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
+import { UserSearchPipe } from "../../shared/pipes/user-search.pipe";
+import dayjs from "dayjs";
+import { BsModalRef, BsModalService, ModalModule } from "ngx-bootstrap/modal";
 
 @Component({
   selector: 'app-admin',
@@ -26,28 +28,45 @@ import {UserSearchPipe} from "../../shared/pipes/user-search.pipe";
     ToDateFormatPipe,
     TranslateModule,
     NgxPaginationModule,
-    UserSearchPipe
+    UserSearchPipe,
+    DatePipe,
+    NgForOf,
+    ReactiveFormsModule,
+    ModalModule
   ],
+  providers: [BsModalService],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
   encapsulation: ViewEncapsulation.None
 })
 export class AdminComponent implements OnInit, OnDestroy {
+  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   uploadSuccess = false;
-  isLoading = true;
+  selectedUser: any;
+  balanceForm!: FormGroup;
+  modalRef?: BsModalRef;
   users: IUser[] = [];
   blocks: IBlockItem[] = [];
-  /*
-  commonUsers: IUser[] = [];
-  usersSortedByRequest: IUser[] = [];
-  products: IProduct[] = [];*/
-  searchUser = '';
+  laws: ILaw[] = [];
+  tests: ITest[] = [];
+  groupedLaws: any[] = [];
   lessonResult: any = [];
+  selectedBlock!: ITest;
+  isLoading = false;
   p1 = 1;
   p2 = 1;
   p3 = 1;
 
-  activeMode: 'users' | 'documents' = 'documents';
+  testForm = new FormGroup({
+    title: new FormControl('', Validators.required),
+    titleKz: new FormControl('', Validators.required),
+    topics: new FormArray([]),  // Масив тем
+    pricePerTest: new FormControl(0, Validators.required),
+    pricePerTestHigh: new FormControl(0, Validators.required)
+  });
+
+
+  activeMode: 'users' | 'documents' | 'laws' | 'tests' = 'documents';
 
   navigation: INavigationItem[] = [
     { title: 'Пользователи', view: 'users', img: 'settings', isVisible: true},
@@ -55,114 +74,104 @@ export class AdminComponent implements OnInit, OnDestroy {
     { title: 'Телефоны', view: 'phones', img: 'settings', isVisible: true},
   ];
 
-  activeView = 'exams';
+  lawsBlockTitleMap = new Map<string, string>([
+    ['1', 'Административная служба (КОРПУС Б)'],
+    ['2', 'Правоохранительная служба'],
+    ['3', 'Нотариат'],
+    ['4', 'Адвокатура'],
+    ['5', 'НАО «Правительство для граждан'],
+    ['6', 'Руководитель организации образования'],
+    ['7', 'Судебный корпус'],
+    ['8', 'Частный судебный исполнитель'],
+    ['9', 'КОРПУС А (Руководитель аппарата или Председатель)'],
+  ])
+
   selectedFiles: (File | undefined | any)[] = [];
-  phoneNumber!: string;
 
   allFilesLoaded = false;
 
   searchField = '';
 
-  destroy$ = new Subject();
+  destroy$ = new Subject<void>();
 
   constructor(
-      public afs: AngularFirestore,
-      private loaderService: LoaderService,
-      private userService: UserService,
-      private databaseService: DatabaseService
+    public afs: AngularFirestore,
+    private loaderService: LoaderService,
+    private userService: UserService,
+    private databaseService: DatabaseService,
+    private modalService: BsModalService,
   ) {
-    this.userService.getUserData()
+    this.userService.getUserData();
+    this.balanceForm = new FormGroup({
+      blockId: new FormControl('', Validators.required),
+      balance: new FormControl([0, [Validators.required, Validators.min(0)]]),
+    });
   }
 
   ngOnInit(): void {
+    this.balanceForm.controls['blockId'].valueChanges.subscribe(value => {
+      this.balanceForm.controls['balance'].setValue(this.selectedUser.balances[value].amount)
+    })
     this.databaseService.getBlocks();
     this.databaseService.getAllUsers();
+    this.databaseService.getAllLaws();
+    this.databaseService.getAllTest();
 
-    this.databaseService.users$.pipe(takeUntil(this.destroy$)).subscribe(users => {
-      this.users = users;
+    combineLatest({
+      users: this.databaseService.users$.pipe(takeUntil(this.destroy$)),
+      blocks: this.databaseService.blocks.pipe(takeUntil(this.destroy$)),
+      laws: this.databaseService.laws$.pipe(takeUntil(this.destroy$)),
+      tests: this.databaseService.tests$.pipe(takeUntil(this.destroy$)),
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ({ users, blocks , laws, tests}) => {
+        this.users = users;
+        this.blocks = [...blocks.sort((a, b) => a.order - b.order)];
+        this.blocks.pop(); // remove PDD block
+        this.laws = laws;
+        this.groupLawsByBlock();
+        this.tests = tests;
+      },
+      error: (err) => console.error('Error loading data:', err),
+      complete: () => this.loaderService.loading$.next(false),
     });
-
-    this.databaseService.blocks.pipe(takeUntil(this.destroy$)).subscribe(blocks => {
-      this.blocks = blocks;
-    })
-
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
   }
 
   ngOnDestroy() {
-    this.destroy$.next(true);
+    this.destroy$.next();
     this.destroy$.complete();
   }
 
-  onChangeMode(mode: 'users' | 'documents'): void {
+  onChangeMode(mode: 'users' | 'documents' | 'laws' | 'tests'): void {
     this.loaderService.loading$.next(true);
-
     this.activeMode = mode;
-
     setTimeout(() => {
       this.loaderService.loading$.next(false);
     }, 1500)
   }
 
-  onSearchUser() {
-    this.users = this.users.filter(user => user.email.toLowerCase().includes(this.searchField.toLowerCase()));
-    this.p1 = 1;
+  openBalanceModal(user: IUser, content: TemplateRef<any>) {
+    this.selectedUser = user;
+    this.balanceForm.controls['balance'].setValue(user.balances)
+    this.modalRef = this.modalService.show(content);
   }
 
-  /*onGetProducts(): void {
-    if (this.products.length < 1) {
-      this.isLoading = true;
-      this.afs
-          .collection('products')
-          .snapshotChanges()
-          .pipe(map(j => j.map(i => i.payload.doc.data() as IProduct)))
-          .subscribe((resp: IProduct[]) => {
-            this.products.length = 0;
-            this.products = resp;
-            this.onGetUsers();
-          });
-    }
+  openAddLawModal(content: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(content);
   }
 
-  onGetUsers(): void {
+  deleteLaw(id: string): void {
     this.afs
-        .collection('users')
-        .snapshotChanges()
-        .pipe(map(j => j.map(i => i.payload.doc.data() as IUser)))
-        .subscribe((resp: IUser[]) => {
-          this.users.length = 0;
-          this.users = resp;
-          this.commonUsers = resp;
-          this.usersSortedByRequest = [...resp.filter(u => u.request && u.request.product && u.request.time)].sort((a, b) => {
-            // @ts-ignore
-            return new Date(a.request.time.seconds * 1000 + a.request.time.nanoseconds / 1e6) < new Date(b.request.time.seconds * 1000 + b.request.time.nanoseconds / 1e6) ? 1 : -1;
-          });
-          this.users = this.commonUsers;
-          this.users.filter(u => dayjs(u.expirationDate) < dayjs()).forEach(u => this.onSuspendAccess(u, 1));
-          this.isLoading = false;
-        });
-  }*/
-
-  /*getActiveUsers(users: IUser[]): IUser[] {
-    return users.filter(u => u.product && u.expirationDate);
-  }
-
-  getExpiredUsers(users: IUser[]): IUser[] {
-    return users.filter(u => u.product && !u.expirationDate);
-  }
-
-  getRequests(users: IUser[]): IUser[] {
-    return users.filter(u => u.request && u.request.product);
-  }
-
-  onGetProductDetails(productId: string): IProduct {
-    return this.products.find(p => p.id === productId);
-  }*/
-
-  getDate(d: any): any {
-    return d ? new Date(d.seconds * 1000 + d.nanoseconds / 1000000) : null;
+      .collection('laws')
+      .doc(id)
+      .delete()
+      .then(() => {
+        alert('Закон успешно удалён!');
+        this.deleteLawFromTopics(id);
+      })
+      .catch((error) => console.error('Ошибка при удалении:', error));
   }
 
   onFileChanged(event: any): void {
@@ -175,9 +184,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       fileReader.onload = () => {
         if (typeof fileReader.result === 'string') {
           this.lessonResult.push(JSON.parse(fileReader.result));
-          console.log(this.lessonResult);
           if (this.lessonResult.length === Array.from(this.selectedFiles).length) {
-            console.log('All files loaded!');
             this.allFilesLoaded = true;
           }
         }
@@ -188,103 +195,205 @@ export class AdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  /*onGrantAccess(user: IUser): void {
+  onSuspendAccess(userId: string, blockId: string): void {
+    this.databaseService.users$.pipe(
+      map(users => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      take(1),
+      switchMap(async (user) => {
+        user!.balances[blockId].expirationDate = null;
+        await this.userService.updateUserData('balances', user!.balances, userId);
+        return this.databaseService.getAllUsers();  // Онови дані після змін
+      })
+    ).subscribe(() => {
+      alert('Доступ приостановлен');
+    });
+  }
 
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.product = user.request.product;
-    temp.expirationDate = dayjs().add(this.onGetProductDetails(user.request.product).duration, 'day').format('YYYY-MM-DDTHH:mm');
-    delete temp.request;
+  proceedAccess(blockId: string, userId: string): void {
+    this.databaseService.users$.pipe(
+      map(users => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      take(1),
+      switchMap(async (user) => {
+        user!.balances[blockId].expirationDate = this.getExpirationDate();
+        await this.userService.updateUserData('balances', user!.balances, userId);
+        return this.databaseService.getAllUsers();  // Онови дані після змін
+      })
+    ).subscribe();
+  }
 
-    this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => {
-          alert('Доступ предоставлен');
-        });
-  }*/
 
-  /*onSuspendAccess(user: IUser, log?): void {
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.expirationDate = null;
-    // temp.product = null;
+  addBalance(userId: string, blockId: string) {
+    this.databaseService.users$.pipe(
+      map((users) => users.find(user => user.uid === userId)),
+      filter(user => !!user),
+      takeUntil(this.destroy$),
+    ).subscribe(async u => {
+      u!.balances[blockId].amount = this.balanceForm.controls['balance'].value;
+      await this.userService.updateUserData('balances', u!.balances, userId);
+      this.modalRef?.hide();
+    });
+  }
 
-    this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => {
-          log ? console.log('Доступ приостановлен') : alert('Доступ приостановлен');
-        });
-  }*/
 
-  /*onExtendAccess(user: IUser): void {
-    const temp = JSON.parse(JSON.stringify(user));
-    temp.expirationDate = dayjs().add(3, 'day').format();
 
-    this.afs
-        .collection('users')
-        .doc(user.uid)
-        .set(temp)
-        .then(() => { console.log('Доступ продлен'); });
-  }*/
+  getExpirationDate(): any {
+    const now = dayjs();
+    const futureDate = now.add(2, 'month');
+    const formattedDate = futureDate.format('YYYY-MM-DD HH:mm:ss');
+    const dateInSeconds = dayjs(formattedDate).unix();
+    return { seconds: dateInSeconds };
+  }
 
   onDeleteUser(uid: string): void {
     this.afs.collection('users')
-        .doc(uid)
-        .delete()
-        .then(() => {
-          alert('Пользователь удлаен!');
-        });
+      .doc(uid)
+      .delete()
+      .then(() => {
+        alert('Пользователь удален!');
+      });
+  }
+
+  groupLawsByBlock() {
+    const grouped = this.laws.reduce((acc: { [key: string]: any[] }, law) => {
+      const blockNumber = law.id.split('-')[0];
+      if (!acc[blockNumber]) {
+        acc[blockNumber] = [];
+      }
+      acc[blockNumber].push(law);
+      return acc;
+    }, {});
+
+    this.groupedLaws = Object.entries(grouped).map(([blockId, items]) => ({
+      blockId,
+      items
+    }));
   }
 
   onRemoveFile(): void {
-    this.lessonResult = null;
+    this.lessonResult = [];
     this.selectedFiles = [];
     this.allFilesLoaded = false;
+    this.fileInput.nativeElement.value = '';
   }
 
   onUpload(type: string): void {
-    if (type === 'products') {
-      /*this.lessonResult.forEach((product: any) => {
-        this.afs
-            .collection(type)
-            .doc(product.id)
-            .set(product)
-            .then(() => {
-              this.onRemoveFile();
-              this.uploadSuccess = true;
-              setTimeout(() => this.uploadSuccess = false, 2000);
-            });
-      });*/
+    this.lessonResult.forEach((item: ILaw | ITest) => {
+      this.afs
+        .collection(type)
+        .doc(item.id)
+        .set(item)
+        .then(() => {
+          this.onRemoveFile();
+          this.uploadSuccess = true;
+          setTimeout(() => this.uploadSuccess = false, 2000);
+        });
+    })
+  }
+
+  filterLaw(laws: ILaw[]): ILaw[] {
+    return laws.filter(law => !law.id.includes('kz'));
+  }
+
+  deleteLawFromTopics(lawId: string): void {
+    this.afs.collection<ITest>('tests').get().subscribe(snapshot => {
+      const batch = this.afs.firestore.batch();
+
+      snapshot.forEach(doc => {
+        const testData = doc.data();
+        const updatedTopics = testData.topics.filter(topic => topic.id !== lawId);
+
+        if (updatedTopics.length !== testData.topics.length) {
+          const testRef = this.afs.collection('tests').doc(doc.id).ref;
+
+          batch.update(testRef, { topics: updatedTopics });
+        }
+      });
+
+      batch.commit()
+        .then(() => console.log('Topics updated successfully'))
+        .catch(error => console.error('Error with updates topics:', error));
+    });
+  }
+
+  get topics(): FormArray {
+    return this.testForm.get('topics') as FormArray;
+  }
+
+  selectedTest(test: ITest): void {
+    this.selectedBlock = test;
+      this.testForm.patchValue({
+        title: test.title,
+        titleKz: test["title-kz"],
+        pricePerTest: test.pricePerTest,
+        pricePerTestHigh: test.pricePerTestHigh
+      });
+
+      test.topics.forEach(topic => {
+        this.topics.push(new FormGroup({
+          id: new FormControl(topic.id, [Validators.required]),
+          title: new FormControl(topic.title),
+          'title-kz': new FormControl(topic['title-kz']),
+          questionsCount: new FormControl(topic.questionsCount),
+          questions: new FormControl(topic.questions)
+        }));
+      });
+  }
+
+  selectedLawIds: string[] = [];
+  onLawChange(event: any, lawId: string): void {
+    if (event.target.checked) {
+      this.selectedLawIds.push(lawId);
     } else {
-      this.lessonResult.forEach((item: any) => {
-        this.afs
-            .collection(type)
-            .doc(item.id)
-            .set(item)
-            .then(() => {
-              this.onRemoveFile();
-              this.uploadSuccess = true;
-              setTimeout(() => this.uploadSuccess = false, 2000);
-            });
-      })
+      this.selectedLawIds = this.selectedLawIds.filter(id => id !== lawId);
     }
   }
 
-  /*onSortUsers(param: string): void {
-    if (param === 'common') {
-      this.users = this.commonUsers;
-    } else {
-      this.users = this.usersSortedByRequest;
-    }
-  }*/
+  addLawsToTopics(): void {
+    this.selectedLawIds.forEach(lawId => {
+      const matchedLaw = this.laws.filter(law => law.id === lawId);
+      const matchedLawKz = this.laws.filter(law => law.id === `${lawId}-kz`)
+      this.topics.push(
+        new FormGroup({
+          id: new FormControl(lawId, [Validators.required]),
+          title: new FormControl(matchedLaw[0].title, [Validators.required]),
+          'title-kz': new FormControl(matchedLawKz[0].title ?? '', [Validators.required]),
+          questionsCount: new FormControl(matchedLaw[0]?.questionsTotal, [Validators.required]),
+          questions: new FormControl([], [Validators.required])
+        })
+      )
+    });
 
-  saveNumber(): void {
-    if (this.phoneNumber) {
-      this.afs.collection('contacts').doc('phones').set({techSupport: this.phoneNumber}).then(() => {
-        this.phoneNumber = '';
-      });
+    this.selectedLawIds = [];
+    this.modalRef?.hide();
+  }
+
+  removeTopic(index: number, lawId: string): void {
+    this.topics.removeAt(index);
+  }
+
+  onUpdateTest() {
+    this.isLoading = true;
+    const testData: Partial<ITest> = {
+      id: this.selectedBlock.id, // залишаємо id при оновленні
+      title: <string>this.testForm.value.title, // дозволяє null
+      'title-kz': <string>this.testForm.value.titleKz, // дозволяє null
+      pricePerTest: +<number>this.testForm.value.pricePerTest, // дозволяє null
+      pricePerTestHigh: <number>this.testForm.value.pricePerTestHigh,
+      topics: this.topics.value // переконайтеся, що topics є масивом
+    };
+
+    if (this.selectedBlock.id) {
+      this.afs
+        .collection('tests')
+        .doc(this.selectedBlock.id)
+        .set(testData)
+        .then(() => {
+          this.uploadSuccess = true;
+          setTimeout(() => this.uploadSuccess = false, 2000);
+        });
+      this.afs.collection<ITest>('tests').doc(this.selectedBlock.id).update(testData).then(() => this.isLoading = false);
     }
   }
 

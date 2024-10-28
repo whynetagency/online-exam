@@ -35,8 +35,8 @@ export class AppComponent implements OnInit {
         })
     }
 
-    setLanguage() {
-        const lang = localStorage.getItem('lang');
+  setLanguage() {
+    const lang = localStorage.getItem('language');
 
         this.translateService.use(lang || environment.defaultLang);
         this.translateService.setDefaultLang(lang || environment.defaultLang);

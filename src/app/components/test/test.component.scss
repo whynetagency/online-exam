@@ -26,6 +26,10 @@
   .form-check-label {
     font-size: 1.15rem;
   }
+
+  .switch-btn-label {
+    font-size: 1.45rem;
+  }
   form {
     flex-wrap: wrap;
 
@@ -42,6 +46,8 @@
   .form-switch {
     input {
       margin-top: 0.35em;
+      width: 3em !important;
+      height: 1.5em !important;
     }
   }
 

@@ -113,11 +113,9 @@
   font-size: 16px;
   margin-bottom: 15px;
 }
-
 .custom-number-list {
   list-style-type: none;
   padding-left: 0;
-  font-family: system-ui !important;
 }
 
 .custom-number-list li {
@@ -132,9 +130,7 @@
   position: absolute;
   left: 0;
   font-weight: bold;
-  font-family: system-ui !important;
 }
-
 @media screen and (min-width: 768px) and (max-width: 1150px) {
   .home {
     background-size: 101% 43%;

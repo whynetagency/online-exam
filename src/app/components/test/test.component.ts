@@ -101,7 +101,6 @@ export class TestComponent implements OnInit, OnDestroy {
     });
 
     this.databaseService.blocks.pipe(takeUntil(this.destroy$)).subscribe(async blocks => {
-
       if (!blocks.length) {
         this.databaseService.getBlocks();
       } else {
@@ -111,6 +110,7 @@ export class TestComponent implements OnInit, OnDestroy {
 
         if (this.testsData.length === 1) {
           this.test = this.testsData[0];
+
           this.onCreateExamForm();
         } else {
           this.showSelectTests = true;
@@ -132,7 +132,7 @@ export class TestComponent implements OnInit, OnDestroy {
     this.examBuilderForm = this.fb.group({});
 
     const savedForm = JSON.parse(localStorage.getItem(`testForm-${this.blockId}`)!);
-
+    console.log(this.test?.topics)
     this.test?.topics.forEach(law => {
       this.examBuilderForm.addControl(law.id, this.fb.control(savedForm && savedForm[law.id] ? savedForm[law.id] : false));
     });
@@ -157,6 +157,8 @@ export class TestComponent implements OnInit, OnDestroy {
       this.saveFormToLs();
       this.isNoLawsSelected = true;
       return;
+    } else {
+      this.isNoLawsSelected = false
     }
 
     if (this.userTestBalance < this.totalExamPrice) {
@@ -396,6 +398,4 @@ export class TestComponent implements OnInit, OnDestroy {
   backToTest() {
     location.reload();
   }
-
-  protected readonly indexedDB = indexedDB;
 }

@@ -1,27 +1,23 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { DatabaseService } from '../../shared/services/database.service';
-import { IBlockItem } from '../../shared/models/exam.model';
-import { LoaderService } from '../../shared/services/loader.service';
-import { filter, Subject, takeUntil, tap } from 'rxjs';
-import { LanguageService } from '../../shared/services/language.service';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { IBlockItem } from "../../shared/models/exam.model";
+import { filter, Subject, takeUntil, tap } from "rxjs";
+import { DatabaseService } from "../../shared/services/database.service";
+import { LoaderService } from "../../shared/services/loader.service";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { LanguageService } from "../../shared/services/language.service";
+import { Router } from "@angular/router";
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-home-kz',
   standalone: true,
   imports: [
-    TranslateModule,
-    RouterLink
+    TranslateModule
   ],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
-  encapsulation: ViewEncapsulation.None,
+  templateUrl: './home-kz.component.html',
+  styleUrl: './home-kz.component.scss'
 })
-export class HomeComponent implements OnInit, OnDestroy {
-
+export class HomeKzComponent implements OnInit {
   blocks: IBlockItem[] = [];
-  lg = this.translateService.currentLang;
 
   destroy$ = new Subject();
 
@@ -46,12 +42,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this.destroy$)
       )
-    .subscribe()
+      .subscribe()
 
     this.languageService.getCurrentLanguageAsObservable().pipe(
       tap((lang) => {
-        if (lang === 'kz') {
-          this.router.navigate(['/home-kz']);
+        if (lang === 'ru') {
+          this.router.navigate(['/home']);
         }
       }),
       takeUntil(this.destroy$)

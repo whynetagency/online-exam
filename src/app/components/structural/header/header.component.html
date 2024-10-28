@@ -12,8 +12,8 @@
               {{ 'HEADER.NAV.HOME' | translate }}
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/home#about">
+          <li class="nav-item active about_item" (click)="navigateToSection('home', 'about')">
+            <a class="nav-link" aria-current="page">
               {{ 'HEADER.NAV.ABOUT' | translate }}
             </a>
           </li>

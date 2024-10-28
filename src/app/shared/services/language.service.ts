@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {TranslateService} from "@ngx-translate/core";
+import { BehaviorSubject, from, Observable } from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -7,6 +8,7 @@ import {TranslateService} from "@ngx-translate/core";
 export class LanguageService {
 
   lg = this.translateService.currentLang;
+  private language$ = new BehaviorSubject(localStorage['language'] || 'ru');
 
   languages = [
     {
@@ -25,14 +27,22 @@ export class LanguageService {
     options: this.languages
   };
 
-  constructor(private translateService: TranslateService) { }
+  constructor(private translateService: TranslateService) {
+    this.translateService.use(this.language$.value)
+  }
 
   onChangeLanguage(lang: string) {
     this.translateService.use(lang);
     this.lg = lang;
+    this.language$.next(lang);
+    localStorage.setItem('language', lang);
   }
 
   getCurrentLanguage() {
     return this.translateService.currentLang;
+  }
+
+  getCurrentLanguageAsObservable(): Observable<string> {
+    return this.language$.asObservable();
   }
 }
