@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import {Router} from "@angular/router";
 import {first} from "rxjs";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
+import { TelegramApiService } from "../../shared/services/telegram-api.service";
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -33,6 +34,7 @@ export class CheckoutComponent implements OnInit {
       private userService: UserService,
       private router: Router,
       private translate: TranslateService,
+      private telegramService: TelegramApiService,
   ) {
   }
 
@@ -94,6 +96,13 @@ export class CheckoutComponent implements OnInit {
         },
         {
           onSuccess: () => {
+            const order = {
+              email: this.userService.auth.currentUser?.email,
+              name: this.userService.user$.value?.name ? this.userService.user$.value?.name : 'не указано',
+              product: this.selectedBlock!.title,
+              amount: this.amount.value
+            };
+            this.telegramService.sendMessage(order).subscribe();
             this.onCheckoutSuccess();
           },
           onFail: function () { // fail
