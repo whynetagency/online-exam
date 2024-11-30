@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import {Router} from "@angular/router";
 import {first} from "rxjs";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
-import { CheckoutService } from "../../shared/services/checkout.service";
+import { TelegramApiService } from "../../shared/services/telegram-api.service";
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -34,7 +34,7 @@ export class CheckoutComponent implements OnInit {
       private userService: UserService,
       private router: Router,
       private translate: TranslateService,
-      private checkOutService: CheckoutService,
+      private telegramService: TelegramApiService,
   ) {
   }
 
@@ -74,10 +74,35 @@ export class CheckoutComponent implements OnInit {
           email: `${this.userService.auth.currentUser?.email}`, //email плательщика (необязательно)
           skin: "mini",
           autoClose: 3,
+          data: {
+            PaymentData: {
+              CustomerReceipt: {
+                Items: [
+                  {
+                    label: this.translate.instant(this.selectedBlock!.title.toString()),
+                    price: this.amount.value,
+                    quantity: 1,
+                    amount: this.amount.value,
+                    vat: null, // Ставка НДС - обязательное поле,
+                  }
+                ],
+                Email: this.userService.auth!.currentUser?.email as string,
+                Amounts: {
+                  Electronic: this.amount.value
+                }
+              }
+            }
+          }
         },
         {
           onSuccess: () => {
-            this.checkOutService.generateCheck(this.amount.value, this.userService.auth!.currentUser?.email as string, this.translate.instant(this.selectedBlock!.title.toString()))
+            const order = {
+              email: this.userService.auth.currentUser?.email,
+              name: this.userService.user$.value?.name ? this.userService.user$.value?.name : 'не указано',
+              product: this.selectedBlock!.title,
+              amount: this.amount.value
+            };
+            this.telegramService.sendMessage(order).subscribe();
             this.onCheckoutSuccess();
           },
           onFail: function () { // fail
